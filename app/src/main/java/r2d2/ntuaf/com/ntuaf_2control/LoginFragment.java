@@ -3,6 +3,7 @@ package r2d2.ntuaf.com.ntuaf_2control;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -23,7 +24,13 @@ import com.facebook.ProfileTracker;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
+import java.io.InputStream;
+import java.security.spec.ECField;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -45,8 +52,11 @@ public class LoginFragment extends Fragment {
             Log.d("NTUAF", "onSuccess");
 
             Profile profile = Profile.getCurrentProfile();
-            displaywelcomemsg(profile);
-
+            if (profile != null) {
+                displaywelcomemsg(profile);
+                LoginTask logintask = new LoginTask();
+                logintask.execute(profile.getId());
+            }
         }
 
         @Override
@@ -59,6 +69,7 @@ public class LoginFragment extends Fragment {
             Log.d("NTUAF", "onError:" + error);
         }
     };
+
     public LoginFragment() {
         // Required empty public constructor
     }
@@ -101,18 +112,16 @@ public class LoginFragment extends Fragment {
         loginButton.registerCallback(mcallbackmanager, mCallback);
 
 
-        mtextview = (TextView)view.findViewById(R.id.txtname);
+        mtextview = (TextView) view.findViewById(R.id.txtname);
     }
 
-    private void displaywelcomemsg(Profile profile){
-        if (profile !=  null) {
+    private void displaywelcomemsg(Profile profile) {
+        if (profile != null) {
             String user_id = profile.getId();
-            mtextview.setText("Hi! "+profile.getName());
+            mtextview.setText("Hi! " + profile.getName());
 
 
-
-
-        }else{
+        } else {
 //            Toast.makeText(getActivity(), "GG!你好像沒登入", Toast.LENGTH_LONG).show();
         }
     }
@@ -136,25 +145,101 @@ public class LoginFragment extends Fragment {
         profileTracker.stopTracking();
         tracker.stopTracking();
     }
-//
-//    private boolean isRegisteredUser(String id){
-//        Httprequest client = new Httprequest();
-//        String result = client.run("123");
-//
-//    }
-//
-//    private class Httprequest{
-//        OkHttpClient client = new OkHttpClient();
-//
-//            String run(String url) throws IOException {
-//            Request request = new Request.Builder()
-//                    .url(url)
-//                    .build();
-//
-//            Response response = client.newCall(request).execute();
-//            return response.body().string();
-//        }
-//
-//
-//    }
+
+    public class LoginTask extends AsyncTask<String, Void, Boolean> {
+
+        private OkHttpClient client = new OkHttpClient();
+        private final String LOG_TAG = LoginTask.class.getSimpleName();
+
+        String token, email, dname, id;
+
+        /**
+         * Take the String representing the complete forecast in JSON Format and
+         * pull out the data we need to construct the Strings needed for the wireframes.
+         * <p/>
+         * Fortunately parsing is easy:  constructor takes the JSON string and converts it
+         * into an Object hierarchy for us.
+         */
+
+        @Override
+        protected Boolean doInBackground(String... params) {
+            if (params.length==0){
+                return false;
+            }
+
+            try {
+                Log.i("NTUAF", params[0]);
+                String result = run(getString(R.string.server_location) + getString(R.string.login_api) + params[0]);
+                Log.i("NTUAF", "result:"+result);
+                getuserDataFromJson(result);
+                return true;
+            } catch (Exception e) {
+                Log.e("NTUAF", "Error:" + e);
+                return false;
+            }
+        }
+
+        private String run(String url) throws IOException {
+            Request request = new Request.Builder()
+                    .url(url)
+                    .build();
+
+            Response response = client.newCall(request).execute();
+            return response.body().string();
+        }
+
+        private boolean getuserDataFromJson(String JsonStr)
+                throws JSONException {
+
+            // These are the names of the JSON objects that need to be extracted.
+            final String AF_LIST = "list";
+            final String AF_FB = "fb";
+            final String AF_EMAIL = "email";
+            final String AF_DISPLAY_NAME = "displayName";
+            final String AF_ID = "id";
+            final String AF_TOKEN = "token";
+
+            JSONObject userjson = new JSONObject(JsonStr);
+            JSONObject user_fb_data = userjson.getJSONObject(AF_FB);
+//            token = user_fb_data.getString(AF_TOKEN);
+            email = user_fb_data.getString(AF_EMAIL);
+            dname = user_fb_data.getString(AF_DISPLAY_NAME);
+            id = user_fb_data.getString(AF_ID);
+
+
+            return true;
+
+        }
+
+        @Override
+
+        protected void onPostExecute(Boolean result) {
+            if (result == true) {
+
+                Log.i("NTUAF", "at Post Execute");
+
+                Profile profile = Profile.getCurrentProfile();
+                if (profile != null) {
+                    if (profile.getId() == id) {
+                        Toast.makeText(getActivity(), "登入成功", Toast.LENGTH_LONG).show();
+                        Log.i("NTUAF", "Login success!");
+                    } else {
+                        Toast.makeText(getActivity(), "沒有你的資料！", Toast.LENGTH_LONG).show();
+                        Log.e("NTUAF", "Error:profile is null in async task2");
+                    }
+                } else {
+                    Toast.makeText(getActivity(), "沒有你的資料！", Toast.LENGTH_LONG).show();
+                    Log.e("NTUAF", "Error:profile is null in async task");
+                }
+            } else {
+                Toast.makeText(getActivity(), "網路出錯！", Toast.LENGTH_LONG).show();
+
+//                mForecastAdapter.clear();
+//                for(String dayForecastStr : result) {
+//                    mForecastAdapter.add(dayForecastStr);
+//                }
+                // New data is back from the server.  Hooray!
+            }
+        }
+    }
 }
