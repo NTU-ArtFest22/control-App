@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">異識流</string>
+    <string name="facebook_app_id">1563375723981219</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>
