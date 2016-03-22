@@ -155,15 +155,16 @@ public class ActivityFragment extends Fragment {
 
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+                String act_id;
                 if (all_activity_id.length>position){
-                    String act_id = all_activity_id[position];
+                    act_id = all_activity_id[position];
                     Log.i("NTUAF_ACT", "user press item "+position+", and the act_id is "+act_id);
-
+                    Intent intent = new Intent(getActivity(), activityRTC.class)
+                            .putExtra(Intent.EXTRA_TEXT, act_id);
+                    startActivity(intent);
                 }
 
-//                Intent intent = new Intent(getActivity(), DetailActivity.class)
-//                        .putExtra(Intent.EXTRA_TEXT, forecast);
-//                startActivity(intent);
+
             }
         });
 
