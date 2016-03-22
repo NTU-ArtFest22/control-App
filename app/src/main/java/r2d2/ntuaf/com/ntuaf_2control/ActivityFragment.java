@@ -15,6 +15,7 @@
  */
 package r2d2.ntuaf.com.ntuaf_2control;
 
+import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -29,6 +30,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -59,7 +61,7 @@ import okhttp3.Response;
  * Encapsulates fetching the forecast and displaying it as a {@link ListView} layout.
  */
 public class ActivityFragment extends Fragment {
-
+    private String[] all_activity_id;
     private ArrayAdapter<String> mActAdapter;
 
     public ActivityFragment() {
@@ -71,7 +73,7 @@ public class ActivityFragment extends Fragment {
         // Add this line in order for this fragment to handle menu events.
 
         if (profile==null){
-            Log.i("NTUAF", "NO user data");
+            Log.i("NTUAF_ACT", "NO user data");
 
             Toast.makeText(getActivity(), "沒有你的資料，請重新登入", Toast.LENGTH_LONG).show();
             LoginManager.getInstance().logOut();
@@ -80,7 +82,7 @@ public class ActivityFragment extends Fragment {
         }else{
             FetchActivityTask fetchActivityTask = new FetchActivityTask();
             fetchActivityTask.execute(profile.getId());
-            Log.i("NTUAF", "get user data");
+            Log.i("NTUAF_ACT", "get user data");
         }
 
 
@@ -109,19 +111,16 @@ public class ActivityFragment extends Fragment {
         int id = item.getItemId();
         switch (id){
             case R.id.menu_btn_logout:
-                Log.i("NTUAF", "User press logout");
+                Log.i("NTUAF_ACT", "User press logout");
                 LoginManager.getInstance().logOut();
                 backtologin();
                 return true;
             case R.id.menu_btn_refresh:
-                Log.i("NTUAF", "User press refresh");
+                Log.i("NTUAF_ACT", "User press refresh");
                 FetchActivityTask task = new FetchActivityTask();
 
                 task.execute(profile.getId());
-                break;
-
-        }
-        if (id == R.id.menu_btn_logout) {
+                return true;
 
         }
         return super.onOptionsItemSelected(item);
@@ -149,9 +148,24 @@ public class ActivityFragment extends Fragment {
 
         View rootView = inflater.inflate(R.layout.fragment_act, container, false);
 
-        // Get a reference to the ListView, and attach this adapter to it.
+
         ListView listView = (ListView) rootView.findViewById(R.id.listview_activity);
         listView.setAdapter(mActAdapter);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+                if (all_activity_id.length>position){
+                    String act_id = all_activity_id[position];
+                    Log.i("NTUAF_ACT", "user press item "+position+", and the act_id is "+act_id);
+
+                }
+
+//                Intent intent = new Intent(getActivity(), DetailActivity.class)
+//                        .putExtra(Intent.EXTRA_TEXT, forecast);
+//                startActivity(intent);
+            }
+        });
 
         return rootView;
     }
@@ -176,17 +190,17 @@ public class ActivityFragment extends Fragment {
             if (params.length==0){
                 return null;
             }
-            Log.i("NTUAF", "start async task");
+            Log.i("NTUAF_ACT", "start async task");
             param_id = params[0];
             String result;
             try {
-                Log.i("NTUAF", "id from fb:" + params[0]);
+                Log.i("NTUAF_ACT", "id from fb:" + params[0]);
                 result = run(getString(R.string.server_location) + getString(R.string.api_act_get_all) + params[0]);
-                Log.i("NTUAF", "result:"+result);
+                Log.i("NTUAF_ACT", "result:"+result);
 
 
             } catch (IOException e) {
-                Log.e("NTUAF", "Error(internet):" + e);
+                Log.e("NTUAF_ACT", "Error(internet):" + e);
 
 
 
@@ -202,7 +216,7 @@ public class ActivityFragment extends Fragment {
                 }
 
             }catch (JSONException e){
-                Log.e("NTUAF", "Error(JSON):" + e);
+                Log.e("NTUAF_ACT", "Error(JSON):" + e);
                 return null;
             }
         }
@@ -229,10 +243,14 @@ public class ActivityFragment extends Fragment {
 
             JSONArray act_list = new JSONArray(JsonStr);
             String[] result = new String[act_list.length()];
+            List<String> act_id = new ArrayList<String>();
+
             for (int i=0; i<act_list.length();i++){
                 result[i] = act_list.getJSONObject(i).getString(AF_GAME_NAME);
-
+                act_id.add(act_list.getJSONObject(i).getString((AF_ID)));
             }
+            all_activity_id = new String[act_id.size()];
+            act_id.toArray(all_activity_id);
             return result;
 
         }
