@@ -32,7 +32,7 @@
         <TextView
             android:id="@+id/txtname"
             android:layout_width="fill_parent"
-            android:text="HI"
+            android:text="HI!請用Facebook登入"
             android:layout_height="50px"
             android:textAlignment="center"
             android:textSize="50px" />

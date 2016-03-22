@@ -6,6 +6,8 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,6 +23,7 @@ import com.facebook.FacebookException;
 import com.facebook.FacebookSdk;
 import com.facebook.Profile;
 import com.facebook.ProfileTracker;
+import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 
@@ -66,7 +69,7 @@ public class LoginFragment extends Fragment {
 
         @Override
         public void onError(FacebookException error) {
-            Log.d("NTUAF", "onError:" + error);
+            Log.d("NTUAF", "onError(FB):" + error);
         }
     };
 
@@ -77,6 +80,8 @@ public class LoginFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+//        check if there is a logout request
+
 
         mcallbackmanager = CallbackManager.Factory.create();
         tracker = new AccessTokenTracker() {
@@ -136,7 +141,14 @@ public class LoginFragment extends Fragment {
     public void onResume() {
         super.onResume();
         Profile profile = Profile.getCurrentProfile();
-        displaywelcomemsg(profile);
+        if (profile==null){
+            user_logout();
+            Log.i("NTUAF", "user logout successfully");
+        }else{
+            displaywelcomemsg(profile);
+        }
+
+
     }
 
     @Override
@@ -146,12 +158,17 @@ public class LoginFragment extends Fragment {
         tracker.stopTracking();
     }
 
+    private void user_logout(){
+
+        mtextview.setText("HI!請用Facebook登入");
+    }
+
     public class LoginTask extends AsyncTask<String, Void, Boolean> {
 
         private OkHttpClient client = new OkHttpClient();
         private final String LOG_TAG = LoginTask.class.getSimpleName();
 
-        String token, email, dname, id;
+        String token, email, dname, id, param_id;
 
         /**
          * Take the String representing the complete forecast in JSON Format and
@@ -166,15 +183,32 @@ public class LoginFragment extends Fragment {
             if (params.length==0){
                 return false;
             }
-
+            Log.i("NTUAF", "start async task");
+            param_id = params[0];
+            String result;
             try {
-                Log.i("NTUAF", params[0]);
-                String result = run(getString(R.string.server_location) + getString(R.string.login_api) + params[0]);
+                Log.i("NTUAF", "id from fb:" + params[0]);
+                result = run(getString(R.string.server_location) + getString(R.string.api_login) + params[0]);
                 Log.i("NTUAF", "result:"+result);
-                getuserDataFromJson(result);
-                return true;
-            } catch (Exception e) {
-                Log.e("NTUAF", "Error:" + e);
+
+
+            } catch (IOException e) {
+                Log.e("NTUAF", "Error(internet):" + e);
+
+
+
+                return false;
+            }
+            try{
+                if (result!=null){
+                    getuserDataFromJson(result);
+                    return true;
+                }else{
+                    return false;
+                }
+
+            }catch (JSONException e){
+                Log.e("NTUAF", "Error(JSON):" + e);
                 return false;
             }
         }
@@ -207,6 +241,7 @@ public class LoginFragment extends Fragment {
             id = user_fb_data.getString(AF_ID);
 
 
+
             return true;
 
         }
@@ -215,24 +250,26 @@ public class LoginFragment extends Fragment {
 
         protected void onPostExecute(Boolean result) {
             if (result == true) {
-
-                Log.i("NTUAF", "at Post Execute");
-
-                Profile profile = Profile.getCurrentProfile();
-                if (profile != null) {
-                    if (profile.getId() == id) {
+                if (param_id.length() != 0) {
+                    Log.i("NTUAF", param_id+" "+id+" "+param_id.equals(id));
+                    if (param_id.equals(id)) {
                         Toast.makeText(getActivity(), "登入成功", Toast.LENGTH_LONG).show();
                         Log.i("NTUAF", "Login success!");
+                        Fragment fragment = new ActivityFragment();
+                        FragmentManager fm = getActivity().getSupportFragmentManager();
+                        FragmentTransaction transaction = fm.beginTransaction();
+                        transaction.replace(android.R.id.content, fragment);
+                        transaction.commit();
                     } else {
                         Toast.makeText(getActivity(), "沒有你的資料！", Toast.LENGTH_LONG).show();
-                        Log.e("NTUAF", "Error:profile is null in async task2");
+                        Log.i("NTUAF", "Error:profile is null in async task2");
                     }
                 } else {
                     Toast.makeText(getActivity(), "沒有你的資料！", Toast.LENGTH_LONG).show();
                     Log.e("NTUAF", "Error:profile is null in async task");
                 }
             } else {
-                Toast.makeText(getActivity(), "網路出錯！", Toast.LENGTH_LONG).show();
+                Toast.makeText(getActivity(), "網路出錯！請重新登入", Toast.LENGTH_LONG).show();
 
 //                mForecastAdapter.clear();
 //                for(String dayForecastStr : result) {

@@ -4,6 +4,8 @@
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="server_location">http://192.168.43.62:5000</string>
-    <string name="login_api">/api/login/</string>
+    <string name="server_location">http://192.168.1.2:5000</string>
+    <!--<string name="server_location">http://192.168.43.62:5000</string>-->
+    <string name="api_login">/api/login/</string>
+    <string name="api_act_get_all">/api/act/get_all/</string>
 </resources>

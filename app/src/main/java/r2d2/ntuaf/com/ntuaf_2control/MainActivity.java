@@ -20,7 +20,7 @@ public class MainActivity extends AppCompatActivity {
         FacebookSdk.sdkInitialize(this);
         Fragment fragment = mFragmentManager.findFragmentByTag(FRAGMENT_TAG);
         FragmentTransaction transaction = mFragmentManager.beginTransaction();
-        transaction.replace(android.R.id.content, new LoginFragment(),FRAGMENT_TAG);
+        transaction.replace(android.R.id.content, new ActivityFragment(),FRAGMENT_TAG);
         transaction.commit();
 
     }
