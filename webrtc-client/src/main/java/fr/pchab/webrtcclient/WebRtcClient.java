@@ -13,7 +13,8 @@ import org.json.JSONObject;
 import android.opengl.EGLContext;
 import android.util.Log;
 import org.webrtc.*;
-import org.webrtc.videoengine.VideoCaptureAndroid;
+//import org.webrtc.videoengine.VideoCaptureAndroid;
+import org.webrtc.CameraEnumerationAndroid;
 
 public class WebRtcClient {
     private final static String TAG = WebRtcClient.class.getCanonicalName();
@@ -167,6 +168,11 @@ public class WebRtcClient {
         private int endPoint;
 
         @Override
+        public void onIceConnectionReceivingChange(boolean b) {
+
+        }
+
+        @Override
         public void onCreateSuccess(final SessionDescription sdp) {
             // TODO: modify sdp to use pcParams prefered codecs
             try {
@@ -265,11 +271,11 @@ public class WebRtcClient {
         endPoints[peer.endPoint] = false;
     }
 
-    public WebRtcClient(RtcListener listener, String host, PeerConnectionParameters params, EGLContext mEGLcontext) {
+    public WebRtcClient(RtcListener listener, String host, PeerConnectionParameters params) {
         mListener = listener;
         pcParams = params;
         PeerConnectionFactory.initializeAndroidGlobals(listener, true, true,
-                params.videoCodecHwAcceleration, mEGLcontext);
+                params.videoCodecHwAcceleration);
         factory = new PeerConnectionFactory();
         MessageHandler messageHandler = new MessageHandler();
 
@@ -301,7 +307,12 @@ public class WebRtcClient {
      * Call this method in Activity.onResume()
      */
     public void onResume() {
-        if(videoSource != null) videoSource.restart();
+        Log.i("NTUAF_RTC", "onresume RTC");
+        if(videoSource != null) {
+
+            videoSource.restart();
+        }
+
     }
 
     /**
@@ -313,15 +324,19 @@ public class WebRtcClient {
             Log.i("NTUAF-webRTC","HELLO2" );
             peer.pc.dispose();
         }
-        Log.i("NTUAF-webRTC","HELLO3" );
-        videoSource.stop();
-        videoSource.dispose();
-        Log.i("NTUAF-webRTC", "HELLO4");
-        factory.dispose();
-        Log.i("NTUAF-webRTC", "HELLO5");
-        client.disconnect();
-        Log.i("NTUAF-webRTC", "HELLO6");
-        client.close();
+        Log.i("NTUAF-webRTC", "HELLO3");
+        try {
+            //videoSource.dispose();
+            Log.i("NTUAF-webRTC", "HELLO4");
+            factory.dispose();
+            Log.i("NTUAF-webRTC", "HELLO5");
+            client.disconnect();
+            Log.i("NTUAF-webRTC", "HELLO6");
+            client.close();
+        }catch (Exception e){
+            Log.e("NTUAF-RTC", "ERROR:"+e);
+        }
+
     }
 
     private int findEndPoint() {
@@ -373,9 +388,7 @@ public class WebRtcClient {
     }
 
     private VideoCapturer getVideoCapturer() {
-        String frontCameraDeviceName = VideoCapturerAndroid.getNameOfBackFacingDevice();
-        VideoCapturerAndroid.getDeviceCount();
-
+        String frontCameraDeviceName = CameraEnumerationAndroid.getNameOfBackFacingDevice();
         return VideoCapturerAndroid.create(frontCameraDeviceName);
     }
 }

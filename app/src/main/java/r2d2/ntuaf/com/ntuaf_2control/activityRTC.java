@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Point;
+import android.opengl.EGLContext;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
@@ -20,8 +21,11 @@ import org.json.JSONException;
 import org.webrtc.MediaStream;
 import org.webrtc.VideoRenderer;
 import org.webrtc.VideoRendererGui;
+import org.webrtc.RendererCommon;
 import fr.pchab.webrtcclient.WebRtcClient;
 import fr.pchab.webrtcclient.PeerConnectionParameters;
+
+
 
 import java.io.InputStream;
 import java.util.List;
@@ -45,7 +49,7 @@ public class activityRTC extends Activity implements WebRtcClient.RtcListener {
     private static final int REMOTE_Y = 0;
     private static final int REMOTE_WIDTH = 100;
     private static final int REMOTE_HEIGHT = 100;
-    private VideoRendererGui.ScalingType scalingType = VideoRendererGui.ScalingType.SCALE_ASPECT_FILL;
+    private RendererCommon.ScalingType scalingType = RendererCommon.ScalingType.SCALE_ASPECT_FILL;
     private GLSurfaceView vsv;
     private VideoRenderer.Callbacks localRender;
     private VideoRenderer.Callbacks remoteRender;
@@ -105,6 +109,7 @@ public class activityRTC extends Activity implements WebRtcClient.RtcListener {
         act_id = intent.getStringExtra("act_id");
         if (act_id==null){
             this.finish();
+
             Log.i(TAG, "Act_id is null");
         }
 
@@ -139,9 +144,9 @@ public class activityRTC extends Activity implements WebRtcClient.RtcListener {
                 .setPositiveButton("是", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        Log.i("NTUAF-webRTC","HELLO" );
-                        onDestroy();
-//                        finish();
+                        Log.i("NTUAF-webRTC", "HELLO");
+//                        onDestroy();.finish();
+                        activityRTC.this.finish();
                     }
 
                 })
@@ -155,14 +160,14 @@ public class activityRTC extends Activity implements WebRtcClient.RtcListener {
         getWindowManager().getDefaultDisplay().getSize(displaySize);
         PeerConnectionParameters params = new PeerConnectionParameters(
                 true, false, displaySize.x, displaySize.y, 30, 1, VIDEO_CODEC_VP9, true, 1, AUDIO_CODEC_OPUS, true);
-
-        client = new WebRtcClient(this, mSocketAddress, params, VideoRendererGui.getEGLContext());
+        client = new WebRtcClient(this, mSocketAddress, params);
         Log.i(TAG, "msocketAddress: "+mSocketAddress+", params: "+params.toString());
     }
 
     @Override
     public void onPause() {
         super.onPause();
+        Log.i(TAG, "onpause");
         vsv.onPause();
         if(client != null) {
             client.onPause();
@@ -172,7 +177,9 @@ public class activityRTC extends Activity implements WebRtcClient.RtcListener {
     @Override
     public void onResume() {
         super.onResume();
+        Log.i(TAG, "onresume");
         vsv.onResume();
+
         if(client != null) {
             client.onResume();
         }
@@ -190,6 +197,7 @@ public class activityRTC extends Activity implements WebRtcClient.RtcListener {
 
     @Override
     public void onCallReady(String callId) {
+        Log.i(TAG, "oncallready");
         if (callerId != null) {
             try {
                 answer(callerId);
@@ -202,11 +210,13 @@ public class activityRTC extends Activity implements WebRtcClient.RtcListener {
     }
 
     public void answer(String callerId) throws JSONException {
+        Log.i(TAG, "answer");
         client.sendMessage(callerId, "init", null);
         startCam();
     }
 
     public void call(String callId) {
+        Log.i(TAG, "call");
         Intent msg = new Intent(Intent.ACTION_SEND);
         msg.putExtra(Intent.EXTRA_TEXT, mSocketAddress + callId);
         msg.setType("text/plain");
@@ -215,12 +225,14 @@ public class activityRTC extends Activity implements WebRtcClient.RtcListener {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.i(TAG, "onactresult");
         if (requestCode == VIDEO_CALL_SENT) {
             startCam();
         }
     }
 
     public void startCam() {
+        Log.i(TAG, "start cam");
         // Camera settings
         Profile profile = Profile.getCurrentProfile();
         if (profile!=null){
@@ -237,6 +249,7 @@ public class activityRTC extends Activity implements WebRtcClient.RtcListener {
 
     @Override
     public void onStatusChanged(final String newStatus) {
+        Log.i(TAG, "onstatuschange");
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -247,6 +260,7 @@ public class activityRTC extends Activity implements WebRtcClient.RtcListener {
 
     @Override
     public void onLocalStream(MediaStream localStream) {
+        Log.i(TAG, "onlocalstream");
         localStream.videoTracks.get(0).addRenderer(new VideoRenderer(localRender));
 
 
@@ -257,6 +271,7 @@ public class activityRTC extends Activity implements WebRtcClient.RtcListener {
 
     @Override
     public void onAddRemoteStream(MediaStream remoteStream, int endPoint) {
+        Log.i(TAG, "onaddremotestream");
         remoteStream.videoTracks.get(0).addRenderer(new VideoRenderer(remoteRender));
         VideoRendererGui.update(remoteRender,
                 REMOTE_X, REMOTE_Y,
@@ -269,6 +284,7 @@ public class activityRTC extends Activity implements WebRtcClient.RtcListener {
 
     @Override
     public void onRemoveRemoteStream(int endPoint) {
+        Log.i(TAG, "onremoveremotestream");
         VideoRendererGui.update(localRender,
                 LOCAL_X_CONNECTING, LOCAL_Y_CONNECTING,
                 LOCAL_WIDTH_CONNECTING, LOCAL_HEIGHT_CONNECTING,
