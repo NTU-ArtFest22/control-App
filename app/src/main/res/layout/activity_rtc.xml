@@ -1,16 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <android.opengl.GLSurfaceView
-        android:id="@+id/glview_call"
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-    <android.view.SurfaceView
-        android:id="@+id/preview"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="200px"
+        android:layout_gravity="center_horizontal">
 
-</RelativeLayout>
+        <Button
+            android:layout_width="0dp"
+            android:layout_weight=".50"
+            android:layout_height="match_parent"
+            android:text="@string/btn_tag_stop"
+            android:textSize="20dp"
+            android:id="@+id/btn_stop_rtc"
+            android:layout_gravity="center_horizontal"
+            android:background="#ff6161" />
+
+        <Button
+            android:layout_width="0dp"
+            android:layout_weight=".50"
+            android:textSize="20dp"
+            android:layout_height="fill_parent"
+            android:text="@string/btn_tag_fb_share"
+            android:id="@+id/btn_fb_share"
+            android:background="#83aeff" />
+    </LinearLayout>
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+
+        <android.opengl.GLSurfaceView
+            android:id="@+id/glview_call"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <android.view.SurfaceView
+            android:id="@+id/preview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </RelativeLayout>
+
+</LinearLayout>

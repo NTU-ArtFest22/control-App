@@ -160,7 +160,8 @@ public class ActivityFragment extends Fragment {
                     act_id = all_activity_id[position];
                     Log.i("NTUAF_ACT", "user press item "+position+", and the act_id is "+act_id);
                     Intent intent = new Intent(getActivity(), activityRTC.class)
-                            .putExtra(Intent.EXTRA_TEXT, act_id);
+                            .putExtra("act_id", act_id);
+
                     startActivity(intent);
                 }
 
@@ -172,9 +173,7 @@ public class ActivityFragment extends Fragment {
     }
     public class FetchActivityTask extends AsyncTask<String, Void, String[]> {
 
-        private final String LOG_ACT = FetchActivityTask.class.getSimpleName();
         private OkHttpClient client = new OkHttpClient();
-        private final String LOG_TAG = ActivityFragment.class.getSimpleName();
         private String param_id;
 
 

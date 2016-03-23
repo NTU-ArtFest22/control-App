@@ -81,7 +81,9 @@ public class LoginFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 //        check if there is a logout request
+    //log out before for init
 
+        LoginManager.getInstance().logOut();
 
         mcallbackmanager = CallbackManager.Factory.create();
         tracker = new AccessTokenTracker() {
@@ -122,10 +124,7 @@ public class LoginFragment extends Fragment {
 
     private void displaywelcomemsg(Profile profile) {
         if (profile != null) {
-            String user_id = profile.getId();
             mtextview.setText("Hi! " + profile.getName());
-
-
         } else {
 //            Toast.makeText(getActivity(), "GG!你好像沒登入", Toast.LENGTH_LONG).show();
         }
@@ -143,6 +142,7 @@ public class LoginFragment extends Fragment {
         Profile profile = Profile.getCurrentProfile();
         if (profile==null){
             user_logout();
+            LoginManager.getInstance().logOut();
             Log.i("NTUAF", "user logout successfully");
         }else{
             displaywelcomemsg(profile);

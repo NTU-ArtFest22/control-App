@@ -14,6 +14,7 @@ import android.opengl.EGLContext;
 import android.util.Log;
 import org.webrtc.*;
 import org.webrtc.videoengine.VideoCaptureAndroid;
+//import  org.webrtc.videoengine.ViEAndroidGLES20;
 
 public class WebRtcClient {
     private final static String TAG = WebRtcClient.class.getCanonicalName();
@@ -311,6 +312,7 @@ public class WebRtcClient {
         for (Peer peer : peers.values()) {
             peer.pc.dispose();
         }
+        videoSource.stop();
         videoSource.dispose();
         factory.dispose();
         client.disconnect();

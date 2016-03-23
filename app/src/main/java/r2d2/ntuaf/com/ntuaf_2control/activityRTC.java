@@ -1,14 +1,21 @@
 package r2d2.ntuaf.com.ntuaf_2control;
 
 import android.app.Activity;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Point;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager.LayoutParams;
+import android.widget.Button;
 import android.widget.Toast;
+
+import com.facebook.Profile;
+
 import org.json.JSONException;
 import org.webrtc.MediaStream;
 import org.webrtc.VideoRenderer;
@@ -16,6 +23,7 @@ import org.webrtc.VideoRendererGui;
 import fr.pchab.webrtcclient.WebRtcClient;
 import fr.pchab.webrtcclient.PeerConnectionParameters;
 
+import java.io.InputStream;
 import java.util.List;
 
 public class activityRTC extends Activity implements WebRtcClient.RtcListener {
@@ -46,10 +54,14 @@ public class activityRTC extends Activity implements WebRtcClient.RtcListener {
     private String callerId;
 
     private String TAG = "NTUAF-RTC";
+    private String act_id = null;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+
+
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().addFlags(
                 LayoutParams.FLAG_FULLSCREEN
@@ -81,13 +93,58 @@ public class activityRTC extends Activity implements WebRtcClient.RtcListener {
 
         final Intent intent = getIntent();
         final String action = intent.getAction();
-
         if (Intent.ACTION_VIEW.equals(action)) {
             final List<String> segments = intent.getData().getPathSegments();
             callerId = segments.get(0);
             Log.i(TAG, "caller_id:"+callerId);
         }
+
+
+        act_id = intent.getStringExtra("act_id");
+        if (act_id==null){
+            this.finish();
+            Log.i(TAG, "Act_id is null");
+        }
+
+
+        final Button btn_stop = (Button) findViewById(R.id.btn_stop_rtc);
+        btn_stop.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                Log.i(TAG, "user press stop");
+                stop_rtc();
+                // Perform action on click
+            }
+        });
+        final Button btn_share = (Button) findViewById(R.id.btn_fb_share);
+        btn_share.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+
+                Log.i(TAG, "user press share");
+                // Perform action on click
+            }
+        });
     }
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        stop_rtc();
+    }
+    private void stop_rtc(){
+        new AlertDialog.Builder(activityRTC.this)
+                .setIcon(android.R.drawable.ic_dialog_info)
+                .setTitle("關閉遊戲")
+                .setMessage("你確定要關閉嗎？")
+                .setPositiveButton("是", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        finish();
+                    }
+
+                })
+                .setNegativeButton("否", null)
+                .show();
+    }
+
 
     private void init() {
         Point displaySize = new Point();
@@ -96,7 +153,7 @@ public class activityRTC extends Activity implements WebRtcClient.RtcListener {
                 true, false, displaySize.x, displaySize.y, 30, 1, VIDEO_CODEC_VP9, true, 1, AUDIO_CODEC_OPUS, true);
 
         client = new WebRtcClient(this, mSocketAddress, params, VideoRendererGui.getEGLContext());
-        Log.i(TAG, "msocketAdd"+mSocketAddress);
+        Log.i(TAG, "msocketAddress: "+mSocketAddress+", params: "+params.toString());
     }
 
     @Override
@@ -121,8 +178,10 @@ public class activityRTC extends Activity implements WebRtcClient.RtcListener {
     public void onDestroy() {
         if(client != null) {
             client.onDestroy();
+            Log.i(TAG,"rtc stop");
         }
         super.onDestroy();
+
     }
 
     @Override
@@ -159,7 +218,17 @@ public class activityRTC extends Activity implements WebRtcClient.RtcListener {
 
     public void startCam() {
         // Camera settings
-        client.start("android_test");
+        Profile profile = Profile.getCurrentProfile();
+        if (profile!=null){
+            Log.i(TAG, "start capturing");
+            client.start(profile.getId());
+        }else{
+            Log.i(TAG, "No user data");
+            this.finish();
+        }
+//        client.start("android_test123");
+
+
     }
 
     @Override
