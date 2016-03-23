@@ -14,7 +14,6 @@ import android.opengl.EGLContext;
 import android.util.Log;
 import org.webrtc.*;
 import org.webrtc.videoengine.VideoCaptureAndroid;
-//import  org.webrtc.videoengine.ViEAndroidGLES20;
 
 public class WebRtcClient {
     private final static String TAG = WebRtcClient.class.getCanonicalName();
@@ -309,13 +308,19 @@ public class WebRtcClient {
      * Call this method in Activity.onDestroy()
      */
     public void onDestroy() {
+        Log.i("NTUAF-webRTC","HELLO1" );
         for (Peer peer : peers.values()) {
+            Log.i("NTUAF-webRTC","HELLO2" );
             peer.pc.dispose();
         }
+        Log.i("NTUAF-webRTC","HELLO3" );
         videoSource.stop();
         videoSource.dispose();
+        Log.i("NTUAF-webRTC", "HELLO4");
         factory.dispose();
+        Log.i("NTUAF-webRTC", "HELLO5");
         client.disconnect();
+        Log.i("NTUAF-webRTC", "HELLO6");
         client.close();
     }
 

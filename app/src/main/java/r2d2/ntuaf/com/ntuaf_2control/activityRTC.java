@@ -53,6 +53,8 @@ public class activityRTC extends Activity implements WebRtcClient.RtcListener {
     private String mSocketAddress;
     private String callerId;
 
+    private boolean mirror = false;
+
     private String TAG = "NTUAF-RTC";
     private String act_id = null;
 
@@ -137,7 +139,9 @@ public class activityRTC extends Activity implements WebRtcClient.RtcListener {
                 .setPositiveButton("是", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        finish();
+                        Log.i("NTUAF-webRTC","HELLO" );
+                        onDestroy();
+//                        finish();
                     }
 
                 })
@@ -244,10 +248,11 @@ public class activityRTC extends Activity implements WebRtcClient.RtcListener {
     @Override
     public void onLocalStream(MediaStream localStream) {
         localStream.videoTracks.get(0).addRenderer(new VideoRenderer(localRender));
-        VideoRendererGui.update(localRender,
-                LOCAL_X_CONNECTING, LOCAL_Y_CONNECTING,
-                LOCAL_WIDTH_CONNECTING, LOCAL_HEIGHT_CONNECTING,
-                scalingType);
+
+
+        //the less param is to mirror or not
+        VideoRendererGui.update(localRender, LOCAL_X_CONNECTING, LOCAL_Y_CONNECTING, LOCAL_WIDTH_CONNECTING, LOCAL_HEIGHT_CONNECTING, scalingType, mirror);
+
     }
 
     @Override
@@ -255,11 +260,11 @@ public class activityRTC extends Activity implements WebRtcClient.RtcListener {
         remoteStream.videoTracks.get(0).addRenderer(new VideoRenderer(remoteRender));
         VideoRendererGui.update(remoteRender,
                 REMOTE_X, REMOTE_Y,
-                REMOTE_WIDTH, REMOTE_HEIGHT, scalingType);
+                REMOTE_WIDTH, REMOTE_HEIGHT, scalingType, mirror);
         VideoRendererGui.update(localRender,
                 LOCAL_X_CONNECTED, LOCAL_Y_CONNECTED,
                 LOCAL_WIDTH_CONNECTED, LOCAL_HEIGHT_CONNECTED,
-                scalingType);
+                scalingType, mirror);
     }
 
     @Override
@@ -267,6 +272,6 @@ public class activityRTC extends Activity implements WebRtcClient.RtcListener {
         VideoRendererGui.update(localRender,
                 LOCAL_X_CONNECTING, LOCAL_Y_CONNECTING,
                 LOCAL_WIDTH_CONNECTING, LOCAL_HEIGHT_CONNECTING,
-                scalingType);
+                scalingType, mirror);
     }
 }

@@ -29,5 +29,6 @@ public class PeerConnectionParameters {
         this.audioStartBitrate = audioStartBitrate;
         this.audioCodec = audioCodec;
         this.cpuOveruseDetection = cpuOveruseDetection;
+
     }
 }
