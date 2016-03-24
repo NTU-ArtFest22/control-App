@@ -173,7 +173,9 @@ public class ActivityFragment extends Fragment {
     }
     public class FetchActivityTask extends AsyncTask<String, Void, String[]> {
 
+        private final String LOG_ACT = FetchActivityTask.class.getSimpleName();
         private OkHttpClient client = new OkHttpClient();
+        private final String LOG_TAG = ActivityFragment.class.getSimpleName();
         private String param_id;
 
 
@@ -196,6 +198,7 @@ public class ActivityFragment extends Fragment {
             try {
                 Log.i("NTUAF_ACT", "id from fb:" + params[0]);
                 result = run(getString(R.string.server_location) + getString(R.string.api_act_get_all) + params[0]);
+                Log.i("NTUAF_ACT", "url:"+getString(R.string.server_location) + getString(R.string.api_act_get_all) + params[0]);
                 Log.i("NTUAF_ACT", "result:"+result);
 
 

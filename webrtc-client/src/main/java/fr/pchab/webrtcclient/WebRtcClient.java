@@ -155,8 +155,10 @@ public class WebRtcClient {
 
         private Emitter.Listener onId = new Emitter.Listener() {
             @Override
+
             public void call(Object... args) {
                 String id = (String) args[0];
+                Log.i("NTUAF-WebRTC", id);
                 mListener.onCallReady(id);
             }
         };
@@ -284,6 +286,7 @@ public class WebRtcClient {
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }
+        Log.i("NTUAF", "onID="+messageHandler.onId);
         client.on("id", messageHandler.onId);
         client.on("message", messageHandler.onMessage);
         client.connect();

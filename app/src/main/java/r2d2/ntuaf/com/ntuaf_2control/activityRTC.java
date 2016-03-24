@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.graphics.Point;
 import android.opengl.EGLContext;
 import android.opengl.GLSurfaceView;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
@@ -17,6 +18,7 @@ import android.widget.Toast;
 
 import com.facebook.Profile;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.webrtc.MediaStream;
 import org.webrtc.VideoRenderer;
@@ -24,10 +26,14 @@ import org.webrtc.VideoRendererGui;
 import org.webrtc.RendererCommon;
 import fr.pchab.webrtcclient.WebRtcClient;
 import fr.pchab.webrtcclient.PeerConnectionParameters;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 
-
+import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 public class activityRTC extends Activity implements WebRtcClient.RtcListener {
@@ -61,6 +67,7 @@ public class activityRTC extends Activity implements WebRtcClient.RtcListener {
 
     private String TAG = "NTUAF-RTC";
     private String act_id = null;
+    private String call_id = null;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -125,7 +132,7 @@ public class activityRTC extends Activity implements WebRtcClient.RtcListener {
         final Button btn_share = (Button) findViewById(R.id.btn_fb_share);
         btn_share.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-
+                sendmsg();
                 Log.i(TAG, "user press share");
                 // Perform action on click
             }
@@ -161,7 +168,7 @@ public class activityRTC extends Activity implements WebRtcClient.RtcListener {
         PeerConnectionParameters params = new PeerConnectionParameters(
                 true, false, displaySize.x, displaySize.y, 30, 1, VIDEO_CODEC_VP9, true, 1, AUDIO_CODEC_OPUS, true);
         client = new WebRtcClient(this, mSocketAddress, params);
-        Log.i(TAG, "msocketAddress: "+mSocketAddress+", params: "+params.toString());
+        Log.i(TAG, "msocketAddress: " + mSocketAddress + ", params: " + params);
     }
 
     @Override
@@ -189,7 +196,7 @@ public class activityRTC extends Activity implements WebRtcClient.RtcListener {
     public void onDestroy() {
         if(client != null) {
             client.onDestroy();
-            Log.i(TAG,"rtc stop");
+            Log.i(TAG, "rtc stop");
         }
         super.onDestroy();
 
@@ -217,12 +224,25 @@ public class activityRTC extends Activity implements WebRtcClient.RtcListener {
 
     public void call(String callId) {
         Log.i(TAG, "call");
-        Intent msg = new Intent(Intent.ACTION_SEND);
-        msg.putExtra(Intent.EXTRA_TEXT, mSocketAddress + callId);
-        msg.setType("text/plain");
-        startActivityForResult(Intent.createChooser(msg, "Call someone :"), VIDEO_CALL_SENT);
+        
+        UpdateCallidTask task = new UpdateCallidTask();
+        Profile profile = Profile.getCurrentProfile();
+        call_id = callId;
+        task.execute(profile.getId(), act_id, callId);
+        
     }
-
+    
+    public void sendmsg(){
+        if (call_id!=null){
+            Intent msg = new Intent(Intent.ACTION_SEND);
+            msg.putExtra(Intent.EXTRA_TEXT, mSocketAddress + call_id);
+            msg.setType("text/plain");
+            startActivityForResult(Intent.createChooser(msg, "Call someone :"), VIDEO_CALL_SENT);
+        }else{
+            Toast.makeText(this, "等待伺服器回應", Toast.LENGTH_SHORT).show();
+        }
+            
+    }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         Log.i(TAG, "onactresult");
@@ -289,5 +309,90 @@ public class activityRTC extends Activity implements WebRtcClient.RtcListener {
                 LOCAL_X_CONNECTING, LOCAL_Y_CONNECTING,
                 LOCAL_WIDTH_CONNECTING, LOCAL_HEIGHT_CONNECTING,
                 scalingType, mirror);
+    }
+
+    public class UpdateCallidTask extends AsyncTask<String, Void, String[]> {
+
+        private OkHttpClient client = new OkHttpClient();
+        private String ac;
+
+
+        /**
+         * Take the String representing the complete forecast in JSON Format and
+         * pull out the data we need to construct the Strings needed for the wireframes.
+         * <p/>
+         * Fortunately parsing is easy:  constructor takes the JSON string and converts it
+         * into an Object hierarchy for us.
+         */
+
+        @Override
+        protected String[] doInBackground(String... params) {
+            Log.i("NTUAF_RTC", "start async task");
+
+            String result;
+            try {
+                Log.i("NTUAF_ACT", "id from fb:" + params[0]);
+                result = run(getString(R.string.server_location) + getString(R.string.api_upload_stream) + params[0]+"/"+params[1]+"/"+params[2]);
+                Log.i("NTUAF_ACT", "result:"+result);
+            } catch (IOException e) {
+                Log.e("NTUAF_ACT", "Error(internet):" + e);
+                return null;
+            }
+
+            return null;
+
+//            try{
+//                if (result!=null){
+//                    String[] strArray = getuserDataFromJson(result);
+//                    return strArray;
+//                }else{
+//                    return null;
+//                }
+//
+//            }catch (JSONException e){
+//                Log.e("NTUAF_ACT", "Error(JSON):" + e);
+//                return null;
+//            }
+        }
+
+        private String run(String url) throws IOException {
+            Request request = new Request.Builder()
+                    .url(url)
+                    .build();
+
+            Response response = client.newCall(request).execute();
+            return response.body().string();
+        }
+
+        private String[] getuserDataFromJson(String JsonStr)
+                throws JSONException {
+
+            // These are the names of the JSON objects that need to be extracted.
+            final String AF_LIST = "list";
+            final String AF_ACT = "fb";
+            final String AF_ID = "id";
+            final String AF_GAME_NAME = "gameName";
+
+
+
+            JSONArray act_list = new JSONArray(JsonStr);
+            String[] result = new String[act_list.length()];
+            List<String> act_id = new ArrayList<String>();
+
+            return result;
+
+        }
+
+        @Override
+
+        protected void onPostExecute(String[] result) {
+            Log.i(TAG, "async finished");
+//            if (result != null) {
+//                mActAdapter.clear();
+//                for(String dayForecastStr : result) {
+//                    mActAdapter.add(dayForecastStr);
+//                }
+//            }
+        }
     }
 }
