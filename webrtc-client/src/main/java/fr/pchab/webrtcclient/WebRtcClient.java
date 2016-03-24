@@ -13,8 +13,7 @@ import org.json.JSONObject;
 import android.opengl.EGLContext;
 import android.util.Log;
 import org.webrtc.*;
-//import org.webrtc.videoengine.VideoCaptureAndroid;
-import org.webrtc.CameraEnumerationAndroid;
+import org.webrtc.videoengine.VideoCaptureAndroid;
 
 public class WebRtcClient {
     private final static String TAG = WebRtcClient.class.getCanonicalName();
@@ -155,10 +154,8 @@ public class WebRtcClient {
 
         private Emitter.Listener onId = new Emitter.Listener() {
             @Override
-
             public void call(Object... args) {
                 String id = (String) args[0];
-                Log.i("NTUAF-WebRTC", id);
                 mListener.onCallReady(id);
             }
         };
@@ -168,11 +165,6 @@ public class WebRtcClient {
         private PeerConnection pc;
         private String id;
         private int endPoint;
-
-        @Override
-        public void onIceConnectionReceivingChange(boolean b) {
-
-        }
 
         @Override
         public void onCreateSuccess(final SessionDescription sdp) {
@@ -273,11 +265,11 @@ public class WebRtcClient {
         endPoints[peer.endPoint] = false;
     }
 
-    public WebRtcClient(RtcListener listener, String host, PeerConnectionParameters params) {
+    public WebRtcClient(RtcListener listener, String host, PeerConnectionParameters params, EGLContext mEGLcontext) {
         mListener = listener;
         pcParams = params;
         PeerConnectionFactory.initializeAndroidGlobals(listener, true, true,
-                params.videoCodecHwAcceleration);
+                params.videoCodecHwAcceleration, mEGLcontext);
         factory = new PeerConnectionFactory();
         MessageHandler messageHandler = new MessageHandler();
 
@@ -286,7 +278,6 @@ public class WebRtcClient {
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }
-        Log.i("NTUAF", "onID="+messageHandler.onId);
         client.on("id", messageHandler.onId);
         client.on("message", messageHandler.onMessage);
         client.connect();
@@ -310,37 +301,20 @@ public class WebRtcClient {
      * Call this method in Activity.onResume()
      */
     public void onResume() {
-        Log.i("NTUAF_RTC", "onresume RTC");
-        if(videoSource != null) {
-
-            videoSource.restart();
-        }
-
+        if(videoSource != null) videoSource.restart();
     }
 
     /**
      * Call this method in Activity.onDestroy()
      */
     public void onDestroy() {
-        Log.i("NTUAF-webRTC","HELLO1" );
         for (Peer peer : peers.values()) {
-            Log.i("NTUAF-webRTC","HELLO2" );
             peer.pc.dispose();
         }
-        Log.i("NTUAF-webRTC", "HELLO3");
-        try {
-
-            videoSource.dispose();
-            Log.i("NTUAF-webRTC", "HELLO4");
-            factory.dispose();
-            Log.i("NTUAF-webRTC", "HELLO5");
-            client.disconnect();
-            Log.i("NTUAF-webRTC", "HELLO6");
-            client.close();
-        }catch (Exception e){
-            Log.e("NTUAF-RTC", "ERROR:"+e);
-        }
-
+        videoSource.dispose();
+        factory.dispose();
+        client.disconnect();
+        client.close();
     }
 
     private int findEndPoint() {
@@ -382,7 +356,7 @@ public class WebRtcClient {
 
             videoSource = factory.createVideoSource(getVideoCapturer(), videoConstraints);
             localMS.addTrack(factory.createVideoTrack("ARDAMSv0", videoSource));
-                                                        //video track id
+            //video track id
         }
 
         AudioSource audioSource = factory.createAudioSource(new MediaConstraints());
@@ -392,7 +366,9 @@ public class WebRtcClient {
     }
 
     private VideoCapturer getVideoCapturer() {
-        String frontCameraDeviceName = CameraEnumerationAndroid.getNameOfBackFacingDevice();
+        String frontCameraDeviceName = VideoCapturerAndroid.getNameOfBackFacingDevice();
+        VideoCapturerAndroid.getDeviceCount();
+
         return VideoCapturerAndroid.create(frontCameraDeviceName);
     }
 }
