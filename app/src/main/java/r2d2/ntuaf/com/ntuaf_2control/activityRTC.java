@@ -73,7 +73,7 @@ public class activityRTC extends Activity implements WebRtcClient.RtcListener {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-
+        Log.i(TAG, "oncreate");
 
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().addFlags(

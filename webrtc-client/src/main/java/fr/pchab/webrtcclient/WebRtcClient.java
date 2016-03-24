@@ -329,7 +329,8 @@ public class WebRtcClient {
         }
         Log.i("NTUAF-webRTC", "HELLO3");
         try {
-            //videoSource.dispose();
+
+            videoSource.dispose();
             Log.i("NTUAF-webRTC", "HELLO4");
             factory.dispose();
             Log.i("NTUAF-webRTC", "HELLO5");

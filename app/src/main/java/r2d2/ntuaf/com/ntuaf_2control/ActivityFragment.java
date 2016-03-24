@@ -66,12 +66,22 @@ public class ActivityFragment extends Fragment {
 
     public ActivityFragment() {
     }
-    private Profile profile = Profile.getCurrentProfile();
+    private Profile profile;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         // Add this line in order for this fragment to handle menu events.
+        Log.i("NTUAF-RTC", "oncreate");
 
+
+
+        setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        profile = Profile.getCurrentProfile();
         if (profile==null){
             Log.i("NTUAF_ACT", "NO user data");
 
@@ -84,9 +94,6 @@ public class ActivityFragment extends Fragment {
             fetchActivityTask.execute(profile.getId());
             Log.i("NTUAF_ACT", "get user data");
         }
-
-
-        setHasOptionsMenu(true);
     }
 
     @Override
@@ -171,6 +178,13 @@ public class ActivityFragment extends Fragment {
 
         return rootView;
     }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.i("NTUAF-ACT", "onResume");
+    }
+
     public class FetchActivityTask extends AsyncTask<String, Void, String[]> {
 
         private final String LOG_ACT = FetchActivityTask.class.getSimpleName();
@@ -196,14 +210,19 @@ public class ActivityFragment extends Fragment {
             param_id = params[0];
             String result;
             try {
-                Log.i("NTUAF_ACT", "id from fb:" + params[0]);
-                result = run(getString(R.string.server_location) + getString(R.string.api_act_get_all) + params[0]);
-                Log.i("NTUAF_ACT", "url:"+getString(R.string.server_location) + getString(R.string.api_act_get_all) + params[0]);
-                Log.i("NTUAF_ACT", "result:"+result);
+                clog("NTUAF_ACT", "id from fb:" + params[0]);
+                if (isAdded()){
+                    result = run(getString(R.string.server_location) + getString(R.string.api_act_get_all) + params[0]);
+                }else{
+                    return null;
+                }
+
+
+                clog("NTUAF_ACT", "result:" + result);
 
 
             } catch (IOException e) {
-                Log.e("NTUAF_ACT", "Error(internet):" + e);
+                clog("NTUAF_ACT", "Error(internet):" + e);
 
 
 
@@ -219,11 +238,16 @@ public class ActivityFragment extends Fragment {
                 }
 
             }catch (JSONException e){
-                Log.e("NTUAF_ACT", "Error(JSON):" + e);
+                clog("NTUAF_ACT", "Error(JSON):" + e);
                 return null;
             }
         }
-
+        private void clog(String tag, String msg){
+         //custom log to avoid crash
+            if (isAdded()){
+                Log.i(tag, msg);
+            }
+        }
         private String run(String url) throws IOException {
             Request request = new Request.Builder()
                     .url(url)

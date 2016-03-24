@@ -4,15 +4,17 @@
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
-    <!--<string name="server_location">http://192.168.1.2:5000</string>-->
-    <string name="server_location">http://192.168.43.62:5000</string>
+    <string name="server_location">http://192.168.1.2:5000</string>
+    <!--<string name="server_location">http://192.168.43.62:5000</string>-->
     <string name="api_login">/api/login/</string>
     <string name="api_act_get_all">/api/act/get_all/</string>
     <string name="api_upload_stream">/api/act/update_stream/</string>
     <string name="title_activity_activity_rtc">activityRTC</string>
-    <string name="host">vast-stream-71983.herokuapp.com</string>
+    <string name="host">192.168.1.2</string>
     <!--<string name="host">192.168.43.62</string>-->
-    <string name="port">80</string>
+    <string name="port">5000</string>
     <string name="btn_tag_stop">停止</string>
     <string name="btn_tag_fb_share">Facebook發文</string>
+
+    <string name="rtc_act_name">rtcprocess</string>
 </resources>
