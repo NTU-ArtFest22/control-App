@@ -229,7 +229,8 @@ public class activityRTC extends Activity implements WebRtcClient.RtcListener {
         Profile profile = Profile.getCurrentProfile();
         call_id = callId;
         task.execute(profile.getId(), act_id, callId);
-        
+//        Toast.makeText(this, "開啟相機", Toast.LENGTH_LONG).show();
+        startCam();
     }
     
     public void sendmsg(){
@@ -238,6 +239,7 @@ public class activityRTC extends Activity implements WebRtcClient.RtcListener {
             msg.putExtra(Intent.EXTRA_TEXT, mSocketAddress + call_id);
             msg.setType("text/plain");
             startActivityForResult(Intent.createChooser(msg, "Call someone :"), VIDEO_CALL_SENT);
+
         }else{
             Toast.makeText(this, "等待伺服器回應", Toast.LENGTH_SHORT).show();
         }
@@ -246,9 +248,9 @@ public class activityRTC extends Activity implements WebRtcClient.RtcListener {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         Log.i(TAG, "onactresult");
-        if (requestCode == VIDEO_CALL_SENT) {
-            startCam();
-        }
+//        if (requestCode == VIDEO_CALL_SENT) {
+//            startCam();
+//        }
     }
 
     public void startCam() {

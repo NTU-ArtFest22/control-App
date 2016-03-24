@@ -11,6 +11,7 @@
     <string name="api_upload_stream">/api/act/update_stream/</string>
     <string name="title_activity_activity_rtc">activityRTC</string>
     <string name="host">vast-stream-71983.herokuapp.com</string>
+    <!--<string name="host">192.168.43.62</string>-->
     <string name="port">80</string>
     <string name="btn_tag_stop">停止</string>
     <string name="btn_tag_fb_share">Facebook發文</string>

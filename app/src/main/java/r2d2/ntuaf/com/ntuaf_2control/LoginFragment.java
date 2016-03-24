@@ -125,8 +125,9 @@ public class LoginFragment extends Fragment {
     private void displaywelcomemsg(Profile profile) {
         if (profile != null) {
             mtextview.setText("Hi! " + profile.getName());
+
         } else {
-//            Toast.makeText(getActivity(), "GG!你好像沒登入", Toast.LENGTH_LONG).show();
+//            Toast.makeText(getActivity(), "GG!你好像沒登入", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -253,7 +254,7 @@ public class LoginFragment extends Fragment {
                 if (param_id.length() != 0) {
                     Log.i("NTUAF", param_id+" "+id+" "+param_id.equals(id));
                     if (param_id.equals(id)) {
-                        Toast.makeText(getActivity(), "登入成功", Toast.LENGTH_LONG).show();
+                        Toast.makeText(getActivity(), "登入成功", Toast.LENGTH_SHORT).show();
                         Log.i("NTUAF", "Login success!");
                         Fragment fragment = new ActivityFragment();
                         FragmentManager fm = getActivity().getSupportFragmentManager();
@@ -261,15 +262,15 @@ public class LoginFragment extends Fragment {
                         transaction.replace(android.R.id.content, fragment);
                         transaction.commit();
                     } else {
-                        Toast.makeText(getActivity(), "沒有你的資料！", Toast.LENGTH_LONG).show();
+                        Toast.makeText(getActivity(), "沒有你的資料！", Toast.LENGTH_SHORT).show();
                         Log.i("NTUAF", "Error:profile is null in async task2");
                     }
                 } else {
-                    Toast.makeText(getActivity(), "沒有你的資料！", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getActivity(), "沒有你的資料！", Toast.LENGTH_SHORT).show();
                     Log.e("NTUAF", "Error:profile is null in async task");
                 }
             } else {
-                Toast.makeText(getActivity(), "網路出錯！請重新登入", Toast.LENGTH_LONG).show();
+                Toast.makeText(getActivity(), "網路出錯！請重新登入", Toast.LENGTH_SHORT).show();
 
 //                mForecastAdapter.clear();
 //                for(String dayForecastStr : result) {
