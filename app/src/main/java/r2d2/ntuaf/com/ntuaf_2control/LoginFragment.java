@@ -209,7 +209,7 @@ public class LoginFragment extends Fragment {
                 }
 
             }catch (JSONException e){
-                Log.e("NTUAF", "Error(JSON):" + e);
+                Log.e("NTUAF-web", "Error(JSON):" + e);
                 return false;
             }
         }
