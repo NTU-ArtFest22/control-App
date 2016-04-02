@@ -13,7 +13,7 @@ import org.json.JSONObject;
 import android.opengl.EGLContext;
 import android.util.Log;
 import org.webrtc.*;
-import org.webrtc.videoengine.VideoCaptureAndroid;
+
 
 public class WebRtcClient {
     private final static String TAG = WebRtcClient.class.getCanonicalName();
@@ -179,6 +179,13 @@ public class WebRtcClient {
                 e.printStackTrace();
             }
         }
+        //insert this
+
+
+        @Override
+        public void onIceConnectionReceivingChange(boolean b) {
+
+        }
 
         @Override
         public void onSetSuccess() {}
@@ -265,11 +272,11 @@ public class WebRtcClient {
         endPoints[peer.endPoint] = false;
     }
 
-    public WebRtcClient(RtcListener listener, String host, PeerConnectionParameters params, EGLContext mEGLcontext) {
+    public WebRtcClient(RtcListener listener, String host, PeerConnectionParameters params) {
         mListener = listener;
         pcParams = params;
         PeerConnectionFactory.initializeAndroidGlobals(listener, true, true,
-                params.videoCodecHwAcceleration, mEGLcontext);
+                params.videoCodecHwAcceleration);
         factory = new PeerConnectionFactory();
         MessageHandler messageHandler = new MessageHandler();
 
@@ -286,7 +293,7 @@ public class WebRtcClient {
         iceServers.add(new PeerConnection.IceServer("stun:stun.l.google.com:19302"));
 
         pcConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveAudio", "true"));
-        pcConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveVideo", "true"));
+        pcConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveVideo", "false"));
         pcConstraints.optional.add(new MediaConstraints.KeyValuePair("DtlsSrtpKeyAgreement", "true"));
     }
 
@@ -366,8 +373,8 @@ public class WebRtcClient {
     }
 
     private VideoCapturer getVideoCapturer() {
-        String frontCameraDeviceName = VideoCapturerAndroid.getNameOfBackFacingDevice();
-        VideoCapturerAndroid.getDeviceCount();
+        String frontCameraDeviceName = CameraEnumerationAndroid.getNameOfBackFacingDevice();
+        CameraEnumerationAndroid.getDeviceCount();
 
         return VideoCapturerAndroid.create(frontCameraDeviceName);
     }
