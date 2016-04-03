@@ -276,7 +276,9 @@ public class activityRTC extends Activity implements WebRtcClient.RtcListener {
             @Override
             public void run() {
                 Toast.makeText(getApplicationContext(), newStatus, Toast.LENGTH_SHORT).show();
+                Log.i("NTUAF-RTC","YAYAYAYAYA");
             }
+
         });
     }
 
@@ -287,7 +289,7 @@ public class activityRTC extends Activity implements WebRtcClient.RtcListener {
 
 
         //the less param is to mirror or not
-        VideoRendererGui.update(localRender, LOCAL_X_CONNECTING, LOCAL_Y_CONNECTING, LOCAL_WIDTH_CONNECTING, LOCAL_HEIGHT_CONNECTING, scalingType, true);
+        VideoRendererGui.update(localRender, LOCAL_X_CONNECTING, LOCAL_Y_CONNECTING, LOCAL_WIDTH_CONNECTING, LOCAL_HEIGHT_CONNECTING, scalingType, false);
 
     }
 
@@ -297,11 +299,11 @@ public class activityRTC extends Activity implements WebRtcClient.RtcListener {
         remoteStream.videoTracks.get(0).addRenderer(new VideoRenderer(remoteRender));
         VideoRendererGui.update(remoteRender,
                 REMOTE_X, REMOTE_Y,
-                REMOTE_WIDTH, REMOTE_HEIGHT, scalingType, true);
+                REMOTE_WIDTH, REMOTE_HEIGHT, scalingType, false);
         VideoRendererGui.update(localRender,
                 LOCAL_X_CONNECTED, LOCAL_Y_CONNECTED,
                 LOCAL_WIDTH_CONNECTED, LOCAL_HEIGHT_CONNECTED,
-                scalingType, true);
+                scalingType, false);
     }
 
     @Override
@@ -310,7 +312,7 @@ public class activityRTC extends Activity implements WebRtcClient.RtcListener {
         VideoRendererGui.update(localRender,
                 LOCAL_X_CONNECTING, LOCAL_Y_CONNECTING,
                 LOCAL_WIDTH_CONNECTING, LOCAL_HEIGHT_CONNECTING,
-                scalingType, true);
+                scalingType, false);
     }
 
     public class UpdateCallidTask extends AsyncTask<String, Void, String[]> {

@@ -227,7 +227,7 @@ public class WebRtcClient {
         public void onAddStream(MediaStream mediaStream) {
             Log.d(TAG,"onAddStream "+mediaStream.label());
             // remote streams are displayed from 1 to MAX_PEER (0 is localStream)
-            mListener.onAddRemoteStream(mediaStream, endPoint+1);
+            mListener.onAddRemoteStream(mediaStream, endPoint + 1);
         }
 
         @Override
@@ -291,6 +291,7 @@ public class WebRtcClient {
 
         iceServers.add(new PeerConnection.IceServer("stun:23.21.150.121"));
         iceServers.add(new PeerConnection.IceServer("stun:stun.l.google.com:19302"));
+
 
         pcConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveAudio", "true"));
         pcConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveVideo", "false"));
@@ -362,13 +363,15 @@ public class WebRtcClient {
 
 
             videoSource = factory.createVideoSource(getVideoCapturer(), videoConstraints);
-            localMS.addTrack(factory.createVideoTrack("ARDAMSv0", videoSource));
+
+            localMS.addTrack(factory.createVideoTrack("ARDAMSv0", videoSource ));
+
             //video track id
         }
 
         AudioSource audioSource = factory.createAudioSource(new MediaConstraints());
-        localMS.addTrack(factory.createAudioTrack("ARDAMSa0", audioSource));
 
+        localMS.addTrack(factory.createAudioTrack("ARDAMSa0", audioSource));
         mListener.onLocalStream(localMS);
     }
 
