@@ -302,7 +302,6 @@ public class WebRtcClient {
      * Call this method in Activity.onPause()
      */
     public void onPause() {
-        if(videoSource != null) videoSource.stop();
     }
 
     /**
@@ -319,6 +318,7 @@ public class WebRtcClient {
         for (Peer peer : peers.values()) {
             peer.pc.dispose();
         }
+
         videoSource.dispose();
         factory.dispose();
         client.disconnect();
@@ -370,6 +370,8 @@ public class WebRtcClient {
         }
 
         AudioSource audioSource = factory.createAudioSource(new MediaConstraints());
+
+
 
         localMS.addTrack(factory.createAudioTrack("ARDAMSa0", audioSource));
         mListener.onLocalStream(localMS);

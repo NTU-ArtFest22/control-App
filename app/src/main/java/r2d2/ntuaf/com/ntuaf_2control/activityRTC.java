@@ -39,7 +39,7 @@ import java.util.List;
 public class activityRTC extends Activity implements WebRtcClient.RtcListener {
     private final static int VIDEO_CALL_SENT = 666;
     private static final String VIDEO_CODEC_VP9 = "VP9";
-    private static final String AUDIO_CODEC_OPUS = "opus";
+    private static final String AUDIO_CODEC_OPUS = "OPUS";
     // Local preview screen position before call is connected.
     private static final int LOCAL_X_CONNECTING = 0;
     private static final int LOCAL_Y_CONNECTING = 0;
@@ -142,7 +142,9 @@ public class activityRTC extends Activity implements WebRtcClient.RtcListener {
             }
         });
         //start gps logger service
-        gpsService= new Intent(activityRTC.this, GpsLogger.class);
+        Log.i("NTUAF-RTC", "HELLO");
+        gpsService= new Intent(activityRTC.this, GpsLogger.class)
+                .putExtra("act_id", act_id);
         startService(gpsService);
     }
     @Override
@@ -174,7 +176,7 @@ public class activityRTC extends Activity implements WebRtcClient.RtcListener {
         Point displaySize = new Point();
         getWindowManager().getDefaultDisplay().getSize(displaySize);
         PeerConnectionParameters params = new PeerConnectionParameters(
-                true, false, displaySize.x, displaySize.y, 30, 1, VIDEO_CODEC_VP9, true, 1, AUDIO_CODEC_OPUS, true);
+                true, false, displaySize.x, displaySize.y, 45, 1, VIDEO_CODEC_VP9, true, 1, AUDIO_CODEC_OPUS, true);
         client = new WebRtcClient(this, mSocketAddress, params);
         Log.i(TAG, "msocketAddress: " + mSocketAddress + ", params: " + params);
     }
@@ -242,16 +244,33 @@ public class activityRTC extends Activity implements WebRtcClient.RtcListener {
     }
     
     public void sendmsg(){
+        new AlertDialog.Builder(activityRTC.this)
+                .setIcon(android.R.drawable.ic_dialog_info)
+                .setTitle("傳送訊息")
+                .setMessage("要傳送嗎？")
+                .setPositiveButton("是", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Log.i("NTUAF-webRTC", "opensendmsg");
+                      opensendmsgdialog();
+                    }
+
+                })
+                .setNegativeButton("否", null)
+                .show();
+
+            
+    }
+    private void opensendmsgdialog(){
         if (call_id!=null){
             Intent msg = new Intent(Intent.ACTION_SEND);
             msg.putExtra(Intent.EXTRA_TEXT, mSocketAddress + call_id);
             msg.setType("text/plain");
             startActivityForResult(Intent.createChooser(msg, "Call someone :"), VIDEO_CALL_SENT);
-
+            Toast.makeText(this, "發送訊息", Toast.LENGTH_SHORT).show();
         }else{
             Toast.makeText(this, "等待伺服器回應", Toast.LENGTH_SHORT).show();
         }
-            
     }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -305,6 +324,7 @@ public class activityRTC extends Activity implements WebRtcClient.RtcListener {
     public void onAddRemoteStream(MediaStream remoteStream, int endPoint) {
         Log.i(TAG, "onaddremotestream");
         remoteStream.videoTracks.get(0).addRenderer(new VideoRenderer(remoteRender));
+
         VideoRendererGui.update(remoteRender,
                 REMOTE_X, REMOTE_Y,
                 REMOTE_WIDTH, REMOTE_HEIGHT, scalingType, false);

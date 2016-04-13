@@ -8,8 +8,12 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 
+import com.facebook.Profile;
+
 public class GpsLogger extends Service implements LocationListener {
     String TAG = "GPS-log";
+    private String act_id;
+    private String artistID;
     public GpsLogger() {
 
     }
@@ -24,7 +28,8 @@ public class GpsLogger extends Service implements LocationListener {
     public void onStart(Intent intent, int startId) {
         super.onStart(intent, startId);
         Log.i(TAG, "onstart");
-
+        Profile profile = Profile.getCurrentProfile();
+        act_id = intent.getStringExtra("act_id");
     }
 
     @Override
