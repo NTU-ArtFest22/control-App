@@ -69,6 +69,7 @@ public class activityRTC extends Activity implements WebRtcClient.RtcListener {
     private String act_id = null;
     private String call_id = null;
 
+    private Intent gpsService;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -137,14 +138,12 @@ public class activityRTC extends Activity implements WebRtcClient.RtcListener {
                 // Perform action on click
             }
         });
-<<<<<<< HEAD
         //start gps logger service
         Log.i("NTUAF-RTC", "HELLO");
         gpsService= new Intent(activityRTC.this, GpsLogger.class)
                 .putExtra("act_id", act_id);
         startService(gpsService);
-=======
->>>>>>> parent of a14c0c7... add gps logger and debug
+
     }
     @Override
     public void onBackPressed() {
