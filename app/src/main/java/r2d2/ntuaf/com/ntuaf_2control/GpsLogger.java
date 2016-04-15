@@ -74,7 +74,9 @@ public class GpsLogger extends Service{
         super.onStart(intent, startId);
         Log.i(TAG, "onstart");
 
-
+        Profile profile = Profile.getCurrentProfile();
+        act_id = intent.getStringExtra("act_id");
+        artistID = profile.getId();
         handler.postDelayed(showTime, 2000);
 
         this.registerReceiver(this.batteryInfoReceiver,	new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
@@ -94,9 +96,7 @@ public class GpsLogger extends Service{
             Log.i(TAG, "loss permission");
             Toast.makeText(GpsLogger.this, "缺少定位權限", Toast.LENGTH_SHORT).show();
         }
-        Profile profile = Profile.getCurrentProfile();
-        act_id = intent.getStringExtra("act_id");
-        artistID = profile.getId();
+
         locMgr.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 0, locMgrListener);
 
 
