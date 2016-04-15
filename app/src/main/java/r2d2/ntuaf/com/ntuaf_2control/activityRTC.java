@@ -106,12 +106,12 @@ public class activityRTC extends Activity implements WebRtcClient.RtcListener {
                 LOCAL_WIDTH_CONNECTING, LOCAL_HEIGHT_CONNECTING, scalingType, true);
 
         final Intent intent = getIntent();
-        final String action = intent.getAction();
-        if (Intent.ACTION_VIEW.equals(action)) {
-            final List<String> segments = intent.getData().getPathSegments();
-            callerId = segments.get(0);
-            Log.i(TAG, "caller_id:"+callerId);
-        }
+//        final String action = intent.getAction();
+//        if (Intent.ACTION_VIEW.equals(action)) {
+//            final List<String> segments = intent.getData().getPathSegments();
+//            callerId = segments.get(0);
+//            Log.i(TAG, "caller_id:"+callerId);
+//        }
 
 
         act_id = intent.getStringExtra("act_id");
@@ -139,7 +139,7 @@ public class activityRTC extends Activity implements WebRtcClient.RtcListener {
             }
         });
         //start gps logger service
-        Log.i("NTUAF-RTC", "HELLO");
+        Log.i("NTUAF-RTC", "HELLO"+act_id);
         gpsService= new Intent(activityRTC.this, GpsLogger.class)
                 .putExtra("act_id", act_id);
         startService(gpsService);
