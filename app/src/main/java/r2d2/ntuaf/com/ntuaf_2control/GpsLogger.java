@@ -48,8 +48,9 @@ public class GpsLogger extends Service{
     private Handler handler = new Handler();
     private LocationManager locMgr;
     private MyLocationlistener locMgrListener;
-    String x, y, tempx, tempy;
+    String x, y, tempx, tempy, acc, alti;
     int level;
+    int log_type = 0;
 
     public GpsLogger() {
 
@@ -63,8 +64,7 @@ public class GpsLogger extends Service{
     @Override
     public void onCreate() {
         super.onCreate();
-        locMgr = (LocationManager) getSystemService(LOCATION_SERVICE);
-        locMgrListener = new MyLocationlistener();
+
         Log.d(TAG, "onCreate() executed");
 
 
@@ -76,28 +76,48 @@ public class GpsLogger extends Service{
 
         Profile profile = Profile.getCurrentProfile();
         act_id = intent.getStringExtra("act_id");
-        artistID = profile.getId();
-        handler.postDelayed(showTime, 2000);
+        log_type = intent.getIntExtra("type", 0);
+        Log.i(TAG, "type:"+log_type);
 
+        artistID = profile.getId();
+        if (log_type==1){
+            handler.postDelayed(showTimeA, 5000);
+            Log.i(TAG, "runnableA");
+        }else if (log_type ==2){
+            handler.postDelayed(showTimeB, 60000);
+            Log.i(TAG, "runnableB");
+        }
         this.registerReceiver(this.batteryInfoReceiver,	new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
+
+        if (log_type==1){
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                Log.i(TAG, "loss permission");
+                Toast.makeText(GpsLogger.this, "缺少定位權限", Toast.LENGTH_SHORT).show();
+            }
+            locMgr = (LocationManager) getSystemService(LOCATION_SERVICE);
+            locMgrListener = new MyLocationlistener();
+            locMgr.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 0, locMgrListener);
+        }
+
+
 
     }
     @Override
     public void onDestroy() {
         super.onDestroy();
         Log.i(TAG, "ondestroy");
+        this.unregisterReceiver(this.batteryInfoReceiver);
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.i(TAG, "onhello");
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            Log.i(TAG, "loss permission");
-            Toast.makeText(GpsLogger.this, "缺少定位權限", Toast.LENGTH_SHORT).show();
-        }
 
-        locMgr.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 0, locMgrListener);
+
+
+
+
 
 
         return super.onStartCommand(intent, flags, startId);
@@ -111,19 +131,29 @@ public class GpsLogger extends Service{
         }
     };
 
-    private Runnable showTime = new Runnable() {
+    private Runnable showTimeA = new Runnable() {
         public void run() {
 //log目前時間
 
             if (tempx!=x || tempy!=y){
+                
                 tempx = x;
                 tempy = y;
                 GPSlogTask task = new GPSlogTask();
-                task.execute(act_id, artistID, tempx, tempy, Integer.toString(level));
+                task.execute(act_id, artistID, tempx, tempy, Integer.toString(level), acc, String.valueOf(log_type));
 
-                Log.i(TAG, new Date().toString()+": "+x+"and"+y+" Battery:"+level);
+                Log.i(TAG, new Date().toString()+": "+x+"and"+y+" Battery:"+level+" acc:"+acc);
             }
-            handler.postDelayed(this, 2000);
+            handler.postDelayed(this, 5000);
+        }
+    };
+    private Runnable showTimeB = new Runnable() {
+        public void run() {
+//log目前時間
+            GPSlogTask task = new GPSlogTask();
+            task.execute(act_id, artistID, tempx, tempy, Integer.toString(level), acc, String.valueOf(log_type));
+            Log.i(TAG, new Date().toString()+": batonly"+" Battery:"+level+" acc:"+acc);
+            handler.postDelayed(this, 60000);
         }
     };
 
@@ -133,6 +163,7 @@ public class GpsLogger extends Service{
         public void onLocationChanged(Location location) {
             x = Double.toString(location.getLongitude());
             y = Double.toString(location.getLatitude());
+            acc = Double.toString(location.getAccuracy());
         }
 
         @Override
@@ -157,10 +188,14 @@ public class GpsLogger extends Service{
         @Override
         protected Void doInBackground(String... params) {
 //            Log.i(TAG, "start async task");
-            String result;
+            String result="";
             try {
+                if (params[6]=="1"){
+                    result = run(getString(R.string.server_location) + getString(R.string.api_gps_log) + params[0]+"/"+params[1]+"/"+params[2]+"/"+params[3]+"/"+params[4]+"/"+params[5]);
+                }else if(params[6]=="2"){
+                    result = run(getString(R.string.server_location) + getString(R.string.api_gps_log) +"batonly/" + params[0]+"/"+params[1]+"/" + params[4]);
+                }
 
-                result = run(getString(R.string.server_location) + getString(R.string.api_gps_log) + params[0]+"/"+params[1]+"/"+params[2]+"/"+params[3]+"/"+params[4]);
 //                Log.i(TAG, "result:"+result);
             } catch (IOException e) {
                 Log.e(TAG, "Error(internet):" + e);

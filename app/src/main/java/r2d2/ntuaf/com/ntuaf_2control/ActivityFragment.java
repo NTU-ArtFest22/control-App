@@ -15,6 +15,7 @@
  */
 package r2d2.ntuaf.com.ntuaf_2control;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -22,6 +23,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.AlertDialog;
 import android.text.format.Time;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -63,7 +65,7 @@ import okhttp3.Response;
 public class ActivityFragment extends Fragment {
     private String[] all_activity_id;
     private ArrayAdapter<String> mActAdapter;
-
+    private String TAG = "NTUAF-act";
     public ActivityFragment() {
     }
     private Profile profile;
@@ -162,14 +164,30 @@ public class ActivityFragment extends Fragment {
 
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-                String act_id;
+                final String act_id;
                 if (all_activity_id.length>position){
                     act_id = all_activity_id[position];
                     Log.i("NTUAF_ACT", "user press item "+position+", and the act_id is "+act_id);
-                    Intent intent = new Intent(getActivity(), activityRTC.class)
-                            .putExtra("act_id", act_id);
 
-                    startActivity(intent);
+                    AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity());
+                    dialog.setTitle("請選擇工作模式").setItems(R.array.workarray, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            Log.i(TAG, "user select"+which);
+
+                            if (which == 0){
+                                Intent intent = new Intent(getActivity(), activityRTC.class)
+                                        .putExtra("act_id", act_id);
+
+                                startActivity(intent);
+                            }else if(which == 1){
+                                Intent intent = new Intent(getActivity(), ActivityWork.class).putExtra("act_id", act_id);
+                                startActivity(intent);
+                            }
+                            // The 'which' argument contains the index position
+                            // of the selected item
+                        }
+                    });
+                    dialog.show();
                 }
 
 

@@ -43,12 +43,14 @@
             android:name=".activityRTC"
             android:label="@string/title_activity_activity_rtc"
             android:screenOrientation="sensorLandscape"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
 
         <service
             android:name=".GpsLogger"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="true" />
+
+        <activity android:name=".ActivityWork"></activity>
     </application>
 
 </manifest>

@@ -141,7 +141,9 @@ public class activityRTC extends Activity implements WebRtcClient.RtcListener {
         //start gps logger service
         Log.i("NTUAF-RTC", "HELLO"+act_id);
         gpsService= new Intent(activityRTC.this, GpsLogger.class)
-                .putExtra("act_id", act_id);
+                .putExtra("act_id", act_id)
+                .putExtra("type", 2);
+//        1 for gps 2 for battery only
         startService(gpsService);
 
     }
@@ -160,6 +162,7 @@ public class activityRTC extends Activity implements WebRtcClient.RtcListener {
                     public void onClick(DialogInterface dialog, int which) {
                         Log.i("NTUAF-webRTC", "HELLO");
 //                        onDestroy();.finish();
+                        stopService(gpsService);
                         activityRTC.this.finish();
                     }
 

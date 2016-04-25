@@ -316,10 +316,12 @@ public class WebRtcClient {
      */
     public void onDestroy() {
         for (Peer peer : peers.values()) {
+            peer.pc.removeStream(localMS);
+            peer.pc.close();
             peer.pc.dispose();
         }
-
-        videoSource.dispose();
+        videoSource.stop();
+//        videoSource.dispose();
         factory.dispose();
         client.disconnect();
         client.close();
@@ -358,11 +360,14 @@ public class WebRtcClient {
             videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("maxFrameRate", Integer.toString(pcParams.videoFps)));
             videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("minFrameRate", Integer.toString(pcParams.videoFps)));
 
+            Log.i(TAG, "setting cam");
 
 
+            if (videoSource == null){
+                Log.i(TAG, "video source is null");
+                videoSource = factory.createVideoSource(getVideoCapturer(), videoConstraints);
+            }
 
-
-            videoSource = factory.createVideoSource(getVideoCapturer(), videoConstraints);
 
             localMS.addTrack(factory.createVideoTrack("ARDAMSv0", videoSource ));
 
