@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Point;
+import android.media.MediaPlayer;
 import android.opengl.EGLContext;
 import android.opengl.GLSurfaceView;
 import android.os.AsyncTask;
@@ -70,6 +71,9 @@ public class activityRTC extends Activity implements WebRtcClient.RtcListener {
     private String call_id = null;
 
     private Intent gpsService;
+
+    MediaPlayer disconnectSound;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -146,6 +150,10 @@ public class activityRTC extends Activity implements WebRtcClient.RtcListener {
 //        1 for gps 2 for battery only
         startService(gpsService);
 
+
+//        disconnected sound
+        disconnectSound = MediaPlayer.create(this, R.raw.homeland_at_dusk);
+        disconnectSound.setLooping(true);
     }
     @Override
     public void onBackPressed() {
@@ -303,7 +311,19 @@ public class activityRTC extends Activity implements WebRtcClient.RtcListener {
             @Override
             public void run() {
                 Toast.makeText(getApplicationContext(), newStatus, Toast.LENGTH_SHORT).show();
-                Log.i("NTUAF-RTC","YAYAYAYAYA");
+                Log.i(TAG, "streaming "+newStatus);
+                if (newStatus=="CONNECTING"){
+                    if (disconnectSound.isPlaying()){
+                        disconnectSound.stop();
+                        disconnectSound.reset();
+                        disconnectSound.release();
+                    }
+                }else if (newStatus=="DISCONNECTED"){
+                    disconnectSound= MediaPlayer.create(getApplicationContext(), R.raw.homeland_at_dusk);
+                    disconnectSound.seekTo(4100);
+                    disconnectSound.start();
+                }
+
             }
 
         });

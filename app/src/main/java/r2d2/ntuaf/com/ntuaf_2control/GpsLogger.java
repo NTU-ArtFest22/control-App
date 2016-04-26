@@ -136,7 +136,7 @@ public class GpsLogger extends Service{
 //log目前時間
 
             if (tempx!=x || tempy!=y){
-                
+
                 tempx = x;
                 tempy = y;
                 GPSlogTask task = new GPSlogTask();
