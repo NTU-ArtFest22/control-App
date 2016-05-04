@@ -59,6 +59,8 @@ public class LoginFragment extends Fragment {
                 displaywelcomemsg(profile);
                 LoginTask logintask = new LoginTask();
                 logintask.execute(profile.getId());
+            }else{
+                Log.i("NTUAF", "No user data");
             }
         }
 

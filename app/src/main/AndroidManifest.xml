@@ -52,7 +52,13 @@
             android:enabled="true"
             android:exported="true" />
 
-        <activity android:name=".ActivityWork"></activity>
+        <activity android:name=".ActivityWork">
+            <intent-filter>
+                <action android:name="android.nfc.action.NDEF_DISCOVERED" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="application/r2d2.ntuaf.com.ntuaf_2control" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>

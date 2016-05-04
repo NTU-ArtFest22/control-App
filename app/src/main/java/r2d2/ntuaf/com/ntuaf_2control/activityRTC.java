@@ -47,10 +47,10 @@ public class activityRTC extends Activity implements WebRtcClient.RtcListener {
     private static final int LOCAL_WIDTH_CONNECTING = 100;
     private static final int LOCAL_HEIGHT_CONNECTING = 100;
     // Local preview screen position after call is connected.
-    private static final int LOCAL_X_CONNECTED = 72;
-    private static final int LOCAL_Y_CONNECTED = 72;
-    private static final int LOCAL_WIDTH_CONNECTED = 25;
-    private static final int LOCAL_HEIGHT_CONNECTED = 25;
+    private static final int LOCAL_X_CONNECTED = 30;
+    private static final int LOCAL_Y_CONNECTED = 30;
+    private static final int LOCAL_WIDTH_CONNECTED = 70;
+    private static final int LOCAL_HEIGHT_CONNECTED = 70;
     // Remote video screen position
     private static final int REMOTE_X = 0;
     private static final int REMOTE_Y = 0;
@@ -69,6 +69,8 @@ public class activityRTC extends Activity implements WebRtcClient.RtcListener {
     private String TAG = "NTUAF-RTC";
     private String act_id = null;
     private String call_id = null;
+
+    private int streamingtype;
 
     private Intent gpsService;
 
@@ -119,6 +121,7 @@ public class activityRTC extends Activity implements WebRtcClient.RtcListener {
 
 
         act_id = intent.getStringExtra("act_id");
+        streamingtype = intent.getIntExtra("type", 1);
         if (act_id==null){
             this.finish();
 
@@ -146,7 +149,7 @@ public class activityRTC extends Activity implements WebRtcClient.RtcListener {
         Log.i("NTUAF-RTC", "HELLO"+act_id);
         gpsService= new Intent(activityRTC.this, GpsLogger.class)
                 .putExtra("act_id", act_id)
-                .putExtra("type", 2);
+                .putExtra("type", 1);
 //        1 for gps 2 for battery only
         startService(gpsService);
 

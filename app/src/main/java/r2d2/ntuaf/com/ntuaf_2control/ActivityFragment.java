@@ -63,7 +63,7 @@ import okhttp3.Response;
  * Encapsulates fetching the forecast and displaying it as a {@link ListView} layout.
  */
 public class ActivityFragment extends Fragment {
-    private String[] all_activity_id;
+    private String[] all_activity_id, all_character;
     private ArrayAdapter<String> mActAdapter;
     private String TAG = "NTUAF-act";
     public ActivityFragment() {
@@ -164,9 +164,10 @@ public class ActivityFragment extends Fragment {
 
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-                final String act_id;
+                final String act_id, character;
                 if (all_activity_id.length>position){
                     act_id = all_activity_id[position];
+                    character = all_character[position];
                     Log.i("NTUAF_ACT", "user press item "+position+", and the act_id is "+act_id);
 
                     AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity());
@@ -176,11 +177,12 @@ public class ActivityFragment extends Fragment {
 
                             if (which == 0){
                                 Intent intent = new Intent(getActivity(), activityRTC.class)
-                                        .putExtra("act_id", act_id);
+                                        .putExtra("act_id", act_id).putExtra("character", character);
 
                                 startActivity(intent);
                             }else if(which == 1){
-                                Intent intent = new Intent(getActivity(), ActivityWork.class).putExtra("act_id", act_id);
+                                Log.i(TAG, "act_id:"+act_id+", character:"+character);
+                                Intent intent = new Intent(getActivity(), ActivityWork.class).putExtra("act_id", act_id).putExtra("character", character);
                                 startActivity(intent);
                             }
                             // The 'which' argument contains the index position
@@ -227,10 +229,12 @@ public class ActivityFragment extends Fragment {
             Log.i("NTUAF_ACT", "start async task");
             param_id = params[0];
             String result;
+            Log.i(TAG, "request:"+getString(R.string.server_location) + getString(R.string.api_act_get_all) + params[0]);
             try {
                 clog("NTUAF_ACT", "id from fb:" + params[0]);
                 if (isAdded()){
                     result = run(getString(R.string.server_location) + getString(R.string.api_act_get_all) + params[0]);
+
                 }else{
                     return null;
                 }
@@ -280,22 +284,41 @@ public class ActivityFragment extends Fragment {
 
             // These are the names of the JSON objects that need to be extracted.
             final String AF_LIST = "list";
-            final String AF_ACT = "fb";
-            final String AF_ID = "id";
-            final String AF_GAME_NAME = "gameName";
+            final String AF_GROUP = "group";
+            final String AF_ID = "_id";
+            final String AF_CHARACTER = "character";
+            final String AF_GAME_NAME = "name";
 
 
 
             JSONArray act_list = new JSONArray(JsonStr);
             String[] result = new String[act_list.length()];
             List<String> act_id = new ArrayList<String>();
+            List<String> character = new ArrayList<String>();
 
             for (int i=0; i<act_list.length();i++){
-                result[i] = act_list.getJSONObject(i).getString(AF_GAME_NAME);
-                act_id.add(act_list.getJSONObject(i).getString((AF_ID)));
+
+                JSONArray group_list = act_list.getJSONObject(i).getJSONArray(AF_GROUP);
+                for (int j=0;j<group_list.length();j++){
+                    if (group_list.getJSONObject(j).getJSONObject("artist").getString("name").equals(profile.getName())){
+                        act_id.add(act_list.getJSONObject(i).getString((AF_ID)));
+
+                        if (group_list.getJSONObject(j).has(AF_CHARACTER)){
+                            result[i] = act_list.getJSONObject(i).getString(AF_GAME_NAME)+"-"+group_list.getJSONObject(j).getString("character");
+                            character.add(group_list.getJSONObject(j).getString("character"));
+
+                        }
+
+                    }
+                }
+
+
             }
             all_activity_id = new String[act_id.size()];
+            all_character = new String[act_id.size()];
             act_id.toArray(all_activity_id);
+            character.toArray(all_character);
+
             return result;
 
         }
