@@ -71,12 +71,11 @@ public class ActivityWork extends AppCompatActivity implements NfcAdapter.Create
         String text = null;
         try {
             text = generateJSON();
-            Log.i(TAG, "Sending Msg");
 
         } catch (JSONException e) {
             Log.i(TAG, "JSONError:"+e);
-            text = "";
         }
+        Log.i(TAG, "Sending Msg");
         NdefMessage msg = new NdefMessage(
                 new NdefRecord[] { NdefRecord.createMime(
                         "text/plain", text.getBytes())
@@ -95,8 +94,8 @@ public class ActivityWork extends AppCompatActivity implements NfcAdapter.Create
     @Override
     public void onResume() {
         super.onResume();
-        Log.i(TAG, "onresume");
         NfcAdapter nfc = NfcAdapter.getDefaultAdapter(this);
+
         if (nfc != null && nfc.isEnabled()) {
             PendingIntent nfcIntent = PendingIntent.getActivity(this, 200,
                     new Intent(this, getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
@@ -105,7 +104,7 @@ public class ActivityWork extends AppCompatActivity implements NfcAdapter.Create
 
 
         } else {
-            Log.i(TAG, "onresume fail");
+
         }
 //        gpsLogger.client.emit("new_mission_server", "123");
     }
@@ -122,21 +121,24 @@ public class ActivityWork extends AppCompatActivity implements NfcAdapter.Create
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        stopService(gpsService);
+
     }
 
     @Override
     public void onNewIntent(Intent intent) {
         // onResume gets called after this to handle the intent
         Log.i(TAG, "new intent get msg"+act_id);
-        processIntent(intent);
-
+        try {
+            processIntent(intent);
+        } catch (JSONException e) {
+            Log.i(TAG, "Error:NFC:"+e);
+        }
     }
 
     /**
      * Parses the NDEF Message from the intent and prints to the TextView
      */
-    void processIntent(Intent intent) {
+    void processIntent(Intent intent) throws JSONException {
         textView = (TextView) findViewById(R.id.textView);
         Parcelable[] rawMsgs = intent.getParcelableArrayExtra(
                 NfcAdapter.EXTRA_NDEF_MESSAGES);
@@ -144,12 +146,7 @@ public class ActivityWork extends AppCompatActivity implements NfcAdapter.Create
         NdefMessage msg = (NdefMessage) rawMsgs[0];
 
         Log.i(TAG, new String(msg.getRecords()[0].getPayload()));
-        try {
-            parseData(new String(msg.getRecords()[0].getPayload()));
-        } catch (JSONException e) {
-            Log.i(TAG, "Error:NFC:"+e);
-        }
-
+        parseData(new String(msg.getRecords()[0].getPayload()));
 
     }
     void parseData(String data) throws JSONException {
