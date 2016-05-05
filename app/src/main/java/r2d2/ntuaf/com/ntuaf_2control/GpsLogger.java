@@ -42,7 +42,7 @@ import okhttp3.Response;
 public class GpsLogger extends Service{
     String TAG = "NTU-GPS-log";
     private String act_id;
-    private String artistID;
+    private String artistID, character;
 
 
     private Handler handler = new Handler();
@@ -52,10 +52,20 @@ public class GpsLogger extends Service{
     int level;
     int log_type = 0;
 
-    public GpsLogger() {
 
+    public Socket client;
+    {
+        String host = "https://ntuaf.ddns.net";
+        try {
+            client = IO.socket(host);
+        } catch (URISyntaxException e) {
+            Log.i(TAG, "no socket connection");
+
+        }
     }
-
+    public GpsLogger() {
+        Socket socket = this.client;
+    }
     @Override
     public IBinder onBind(Intent intent) {
         // TODO: Return the communication channel to the service.
@@ -66,7 +76,7 @@ public class GpsLogger extends Service{
         super.onCreate();
 
         Log.d(TAG, "onCreate() executed");
-
+        client.connect();
 
     }
     @Override
@@ -76,6 +86,7 @@ public class GpsLogger extends Service{
 
         Profile profile = Profile.getCurrentProfile();
         act_id = intent.getStringExtra("act_id");
+        character = intent.getStringExtra("character");
         log_type = intent.getIntExtra("type", 0);
         Log.i(TAG, "type:"+log_type);
 
@@ -99,7 +110,40 @@ public class GpsLogger extends Service{
             locMgr.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 0, locMgrListener);
         }
 
+//        id register
+        try{
+            JSONObject info = new JSONObject();
+            info.put("act_id", act_id);
+            info.put("character", character);
+            info.put("type", 3);
+            client.emit("register_client_id", info);
+            Log.i(TAG, "emit register_client_id");
+        }catch (JSONException e){
+            Log.i(TAG, "cannot create register info array");
 
+        }
+
+        MessageHandler msghandler = new MessageHandler();
+        client.on("register_status", msghandler.onRegisterStatus);
+
+    }
+    private class MessageHandler {
+
+        private MessageHandler() {
+
+        }
+
+        private Emitter.Listener onRegisterStatus = new Emitter.Listener() {
+            @Override
+            public void call(Object... args) {
+                if (args[0].equals("success")){
+                    Log.i(TAG, "regist successfully");
+                }else{
+                    Log.i(TAG, "regist failed");
+
+                }
+            }
+        };
 
     }
     @Override
@@ -107,11 +151,12 @@ public class GpsLogger extends Service{
         super.onDestroy();
         Log.i(TAG, "ondestroy");
         this.unregisterReceiver(this.batteryInfoReceiver);
+        client.disconnect();
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.i(TAG, "onhello");
+        Log.i(TAG, "onhello"+act_id);
 
 
 

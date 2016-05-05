@@ -1,5 +1,6 @@
 package r2d2.ntuaf.com.ntuaf_2control;
 
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
@@ -30,23 +31,15 @@ public class ActivityWork extends AppCompatActivity implements NfcAdapter.Create
     TextView textView, textView2;
     final String TAG="NTUAF-WORK";
     private Intent intent;
+    private GpsLogger gpsLogger = new GpsLogger();
 
 
-    private Socket client;
-    {
-        String host = "https://ntuaf.ddns.net";
-        try {
-            client = IO.socket(host);
-        } catch (URISyntaxException e) {
-            Log.i(TAG, "no socket connection");
-            finish();
-        }
-    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 //        socket
-        client.connect();
+
         setContentView(R.layout.activity_work);
         TextView textView = (TextView) findViewById(R.id.textView);
         // Check for available NFC Adapter
@@ -58,90 +51,78 @@ public class ActivityWork extends AppCompatActivity implements NfcAdapter.Create
         }
         // Register callback
         mNfcAdapter.setNdefPushMessageCallback(this, this);
-
+//        get data from previous act
         intent = getIntent();
-
         act_id = intent.getStringExtra("act_id");
         character =intent.getStringExtra("character");
         textView2 = (TextView) findViewById(R.id.act_name);
-        textView2.setText(act_id);
 
-
-//        id register
-        try{
-            JSONObject info = new JSONObject();
-            info.put("act_id", act_id);
-            info.put("character", character);
-            info.put("type", 3);
-            client.emit("register_client_id", info);
-            Log.i(TAG, "emit register_client_id");
-        }catch (JSONException e){
-            Log.i(TAG, "cannot create register info array");
-            finish();
-        }
-
-        MessageHandler msghandler = new MessageHandler();
-        client.on("register_status", msghandler.onRegisterStatus);
+        gpsService= new Intent(ActivityWork.this, gpsLogger.getClass())
+                .putExtra("act_id", act_id)
+                .putExtra("type", 1)
+                .putExtra("character", character);
+//        1 for gps 2 for battery only
+        startService(gpsService);
 
     }
-    private class MessageHandler {
 
-        private MessageHandler() {
-
-        }
-
-        private Emitter.Listener onRegisterStatus = new Emitter.Listener() {
-            @Override
-            public void call(Object... args) {
-                if (args[0].equals("success")){
-                    Log.i(TAG, "regist successfully");
-                }else{
-                    Log.i(TAG, "regist failed");
-                    finish();
-                }
-            }
-        };
-
-    }
     @Override
     public NdefMessage createNdefMessage(NfcEvent event) {
-        String text = ("Beam me up, Android!\n\n" +
-                "Beam Time: " + System.currentTimeMillis());
+        String text = null;
+        try {
+            text = generateJSON();
+            Log.i(TAG, "Sending Msg");
+
+        } catch (JSONException e) {
+            Log.i(TAG, "JSONError:"+e);
+            text = "";
+        }
         NdefMessage msg = new NdefMessage(
                 new NdefRecord[] { NdefRecord.createMime(
-                        "application/r2d2.ntuaf.com.ntuaf_2control", text.getBytes())
-                        /**
-                         * The Android Application Record (AAR) is commented out. When a device
-                         * receives a push with an AAR in it, the application specified in the AAR
-                         * is guaranteed to run. The AAR overrides the tag dispatch system.
-                         * You can add it back in to guarantee that this
-                         * activity starts when receiving a beamed message. For now, this code
-                         * uses the tag dispatch system.
-                        */
-                        //,NdefRecord.createApplicationRecord("com.example.android.beam")
+                        "text/plain", text.getBytes())
                 });
         return msg;
-    }
 
+    }
+    private String generateJSON() throws JSONException {
+        JSONObject selfdata = new JSONObject();
+        selfdata.accumulate("identity", "NTUAF-R2D2-Mstream");
+        selfdata.accumulate("act_id", act_id);
+        selfdata.accumulate("character", character);
+        Log.i(TAG,"JSON"+selfdata.toString());
+        return selfdata.toString();
+    }
     @Override
     public void onResume() {
         super.onResume();
-        // Check to see that the Activity started due to an Android Beam
-        Log.i(TAG, "msg:"+NfcAdapter.ACTION_NDEF_DISCOVERED);
-        Log.i(TAG, NfcAdapter.EXTRA_NDEF_MESSAGES);
-        Log.i(TAG, "action"+getIntent().getAction());
-        act_id = intent.getStringExtra("act_id");
-        if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(getIntent().getAction())) {
-            Log.i(TAG, "get msg"+act_id);
+        Log.i(TAG, "onresume");
+        NfcAdapter nfc = NfcAdapter.getDefaultAdapter(this);
+        if (nfc != null && nfc.isEnabled()) {
+            PendingIntent nfcIntent = PendingIntent.getActivity(this, 200,
+                    new Intent(this, getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
 
-            processIntent(getIntent());
+            nfc.enableForegroundDispatch(this, nfcIntent, null, null);
+
+
+        } else {
+            Log.i(TAG, "onresume fail");
+        }
+//        gpsLogger.client.emit("new_mission_server", "123");
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        NfcAdapter nfc = NfcAdapter.getDefaultAdapter(this);
+        if (nfc != null && nfc.isEnabled()) {
+            nfc.disableForegroundDispatch(this);
         }
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        client.disconnect();
+        stopService(gpsService);
     }
 
     @Override
@@ -149,6 +130,7 @@ public class ActivityWork extends AppCompatActivity implements NfcAdapter.Create
         // onResume gets called after this to handle the intent
         Log.i(TAG, "new intent get msg"+act_id);
         processIntent(intent);
+
     }
 
     /**
@@ -160,8 +142,26 @@ public class ActivityWork extends AppCompatActivity implements NfcAdapter.Create
                 NfcAdapter.EXTRA_NDEF_MESSAGES);
         // only one message sent during the beam
         NdefMessage msg = (NdefMessage) rawMsgs[0];
-        // record 0 contains the MIME type, record 1 is the AAR, if present
-        textView.setText(new String(msg.getRecords()[0].getPayload()));
+
+        Log.i(TAG, new String(msg.getRecords()[0].getPayload()));
+        try {
+            parseData(new String(msg.getRecords()[0].getPayload()));
+        } catch (JSONException e) {
+            Log.i(TAG, "Error:NFC:"+e);
+        }
+
+
+    }
+    void parseData(String data) throws JSONException {
+        JSONObject JSONdata = new JSONObject(data);
+        if (JSONdata.has("NTUAF-R2D2-Mstream")){
+            String other_act_id = JSONdata.getString("act_id");
+            String other_character = JSONdata.getString("character");
+            if (act_id==other_act_id){
+                Log.i(TAG, "start character exchange");
+
+            }
+        }
     }
 }
 

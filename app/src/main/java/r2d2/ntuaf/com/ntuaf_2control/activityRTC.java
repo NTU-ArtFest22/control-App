@@ -67,7 +67,7 @@ public class activityRTC extends Activity implements WebRtcClient.RtcListener {
     private boolean mirror = false;
 
     private String TAG = "NTUAF-RTC";
-    private String act_id = null;
+    private String act_id = null, character = null;
     private String call_id = null;
 
     private int streamingtype;
@@ -121,6 +121,7 @@ public class activityRTC extends Activity implements WebRtcClient.RtcListener {
 
 
         act_id = intent.getStringExtra("act_id");
+        character = intent.getStringExtra("character");
         streamingtype = intent.getIntExtra("type", 1);
         if (act_id==null){
             this.finish();
@@ -149,7 +150,8 @@ public class activityRTC extends Activity implements WebRtcClient.RtcListener {
         Log.i("NTUAF-RTC", "HELLO"+act_id);
         gpsService= new Intent(activityRTC.this, GpsLogger.class)
                 .putExtra("act_id", act_id)
-                .putExtra("type", 1);
+                .putExtra("type", 2)
+                .putExtra("character", character);
 //        1 for gps 2 for battery only
         startService(gpsService);
 
@@ -200,6 +202,7 @@ public class activityRTC extends Activity implements WebRtcClient.RtcListener {
         if(client != null) {
             client.onPause();
         }
+
     }
 
     @Override
