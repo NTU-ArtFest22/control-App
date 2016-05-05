@@ -1,12 +1,15 @@
 package r2d2.ntuaf.com.ntuaf_2control;
 
+import android.app.Activity;
 import android.app.PendingIntent;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
 import android.nfc.NfcEvent;
 import android.os.Parcelable;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -24,7 +27,7 @@ import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 
-public class ActivityWork extends AppCompatActivity implements NfcAdapter.CreateNdefMessageCallback {
+public class ActivityWork extends Activity implements NfcAdapter.CreateNdefMessageCallback {
     private Intent gpsService;
     private String act_id, character;
     NfcAdapter mNfcAdapter;
@@ -63,6 +66,9 @@ public class ActivityWork extends AppCompatActivity implements NfcAdapter.Create
                 .putExtra("character", character);
 //        1 for gps 2 for battery only
         startService(gpsService);
+
+        MessageHandler msghandler = new MessageHandler();
+        gpsLogger.client.on("new_character_data", msghandler.onNewclass);
 
     }
 
@@ -121,7 +127,7 @@ public class ActivityWork extends AppCompatActivity implements NfcAdapter.Create
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
+        stopService(gpsService);
     }
 
     @Override
@@ -143,22 +149,95 @@ public class ActivityWork extends AppCompatActivity implements NfcAdapter.Create
         Parcelable[] rawMsgs = intent.getParcelableArrayExtra(
                 NfcAdapter.EXTRA_NDEF_MESSAGES);
         // only one message sent during the beam
-        NdefMessage msg = (NdefMessage) rawMsgs[0];
+        if (rawMsgs.length>0){
+            NdefMessage msg = (NdefMessage) rawMsgs[0];
 
-        Log.i(TAG, new String(msg.getRecords()[0].getPayload()));
-        parseData(new String(msg.getRecords()[0].getPayload()));
+            Log.i(TAG, new String(msg.getRecords()[0].getPayload()));
+            parseData(new String(msg.getRecords()[0].getPayload()));
 
+        }else {
+            Log.i(TAG, "No msg send");
+        }
+
+    }
+    @Override
+    public void onBackPressed() {
+
+        stop_rtc();
+
+    }
+    private void stop_rtc(){
+        new AlertDialog.Builder(ActivityWork.this)
+                .setIcon(android.R.drawable.ic_dialog_info)
+                .setTitle("關閉遊戲")
+                .setMessage("你確定要關閉嗎？")
+                .setPositiveButton("是", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Log.i("NTUAF-webRTC", "HELLO");
+//                        onDestroy();.finish();
+                        stopService(gpsService);
+                        ActivityWork.this.finish();
+                    }
+
+                })
+                .setNegativeButton("否", null)
+
+                .show();
     }
     void parseData(String data) throws JSONException {
         JSONObject JSONdata = new JSONObject(data);
-        if (JSONdata.has("NTUAF-R2D2-Mstream")){
+        if (JSONdata.has("identity")){
             String other_act_id = JSONdata.getString("act_id");
             String other_character = JSONdata.getString("character");
-            if (act_id==other_act_id){
+            if (act_id.equals(other_act_id)){
                 Log.i(TAG, "start character exchange");
-
+                try{
+                    askforexchange(other_character);
+                }catch (JSONException e){
+                    Toast.makeText(ActivityWork.this, "發生錯誤！再試一次", Toast.LENGTH_SHORT).show();
+                    Log.i(TAG,"JSON error"+e);
+                }
+            }else{
+//                cannot change
+                Toast.makeText(ActivityWork.this, "不同活動啦!!!", Toast.LENGTH_SHORT).show();
+                Log.i(TAG, "cannot change due to the different act");
             }
         }
+    }
+    void askforexchange(String other_character) throws JSONException {
+        JSONObject exchange_data = new JSONObject();
+        exchange_data.accumulate("act_id", act_id);
+        exchange_data.accumulate("self_character", character);
+        exchange_data.accumulate("other_character", other_character);
+        Log.i(TAG,"Socket:JSON"+exchange_data.toString());
+        gpsLogger.client.emit("exchange_request", exchange_data);
+
+    }
+    void askforupdate() throws JSONException {
+        JSONObject info_array = new JSONObject();
+        info_array.accumulate("act_id", act_id);
+        info_array.accumulate("self_character", character);
+        gpsLogger.client.emit("update_request", info_array);
+    }
+    public class MessageHandler {
+
+        private MessageHandler() {
+
+        }
+
+        private Emitter.Listener onNewclass = new Emitter.Listener() {
+            @Override
+            public void call(Object... args) {
+                Log.i(TAG, "new class come！！！");
+                if (args[0].equals("success")){
+                    Log.i(TAG, "new class come successfully");
+                }else{
+                    Log.i(TAG, "new class come failed");
+                }
+            }
+        };
+
     }
 }
 

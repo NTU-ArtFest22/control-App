@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
@@ -16,6 +17,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.app.ActivityCompat;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -126,6 +128,7 @@ public class GpsLogger extends Service{
         MessageHandler msghandler = new MessageHandler();
         client.on("register_status", msghandler.onRegisterStatus);
 
+
     }
     private class MessageHandler {
 
@@ -144,6 +147,18 @@ public class GpsLogger extends Service{
                 }
             }
         };
+        private Emitter.Listener onnew_character_data = new Emitter.Listener() {
+            @Override
+            public void call(Object... args) {
+                Log.i(TAG, args[0].toString());
+                if (args[0].equals("success")){
+                    Log.i(TAG, "regist successfully");
+                }else{
+                    Log.i(TAG, "regist failed");
+
+                }
+            }
+        };
 
     }
     @Override
@@ -153,6 +168,7 @@ public class GpsLogger extends Service{
         this.unregisterReceiver(this.batteryInfoReceiver);
         client.disconnect();
     }
+
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {

@@ -9,20 +9,67 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="r2d2.ntuaf.com.ntuaf_2control.ActivityWork">
 
-    <TextView
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true">
+
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Missions"
+            android:id="@+id/button"
+            android:layout_gravity="bottom"
+            android:layout_weight=".50" />
+
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Map"
+            android:id="@+id/button2"
+            android:layout_gravity="bottom"
+            android:layout_weight=".50" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="vertical"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="New Text"
-        android:id="@+id/textView"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
-    <TextView
+        android:layout_below="@+id/imageView2"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="51dp"
+        android:textAlignment="center">
+
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="XXXact"
+            android:id="@+id/act_name"
+            android:textSize="30sp"
+            android:textAlignment="center" />
+
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="Class"
+            android:id="@+id/txt_class"
+            android:singleLine="false"
+            android:textIsSelectable="false"
+            android:textSize="40sp"
+            android:textAlignment="center" />
+    </LinearLayout>
+
+    <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="New Text"
-        android:id="@+id/act_name"
+        android:id="@+id/imageView2"
+        android:src="@drawable/head"
+        android:contentDescription="@string/asd"
         android:layout_alignParentTop="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:layout_centerHorizontal="true" />
+
 </RelativeLayout>
