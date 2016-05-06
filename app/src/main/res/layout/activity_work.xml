@@ -59,7 +59,7 @@
             android:id="@+id/txt_class"
             android:singleLine="false"
             android:textIsSelectable="false"
-            android:textSize="40sp"
+            android:textSize="60sp"
             android:textAlignment="center" />
     </LinearLayout>
 
