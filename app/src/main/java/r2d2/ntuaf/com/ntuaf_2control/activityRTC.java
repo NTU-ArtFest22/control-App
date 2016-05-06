@@ -39,8 +39,8 @@ import java.util.List;
 
 public class activityRTC extends Activity implements WebRtcClient.RtcListener {
     private final static int VIDEO_CALL_SENT = 666;
-    private static final String VIDEO_CODEC_VP9 = "VP9";
-    private static final String AUDIO_CODEC_OPUS = "OPUS";
+    private static final String VIDEO_CODEC_VP9 = "VP8";
+    private static final String AUDIO_CODEC_OPUS = "iSAC";
     // Local preview screen position before call is connected.
     private static final int LOCAL_X_CONNECTING = 0;
     private static final int LOCAL_Y_CONNECTING = 0;
