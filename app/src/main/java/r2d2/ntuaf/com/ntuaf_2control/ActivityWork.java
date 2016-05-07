@@ -53,7 +53,7 @@ public class ActivityWork extends Activity implements NfcAdapter.CreateNdefMessa
      * ATTENTION: This was auto-generated to implement the App Indexing API.
      * See https://g.co/AppIndexing/AndroidStudio for more information.
      */
-    private GoogleApiClient client;
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -96,14 +96,12 @@ public class ActivityWork extends Activity implements NfcAdapter.CreateNdefMessa
         startService(gpsService);
 
         MessageHandler msghandler = new MessageHandler();
+
         gpsLogger.client.on("new_character_data", msghandler.onNewclass);
 
 
         gpsLogger.client.on("register_status", msghandler.onRegisterStatus);
 
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
     }
 
     @Override
@@ -150,6 +148,12 @@ public class ActivityWork extends Activity implements NfcAdapter.CreateNdefMessa
 
         } else {
 
+        }
+        try {
+            askforupdate();
+        } catch (JSONException e) {
+            Log.e(TAG, "error occure when updating");
+            Toast.makeText(ActivityWork.this, "連線錯誤!!!", Toast.LENGTH_SHORT).show();
         }
 //        gpsLogger.client.emit("new_mission_server", "123");
     }
@@ -213,7 +217,7 @@ public class ActivityWork extends Activity implements NfcAdapter.CreateNdefMessa
         super.onStart();
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
-        client.connect();
+
         Log.i(TAG, "=====OnStart=====");
         txtupdate();
 
@@ -229,7 +233,7 @@ public class ActivityWork extends Activity implements NfcAdapter.CreateNdefMessa
                 // TODO: Make sure this auto-generated app URL is correct.
                 Uri.parse("android-app://r2d2.ntuaf.com.ntuaf_2control/http/host/path")
         );
-        AppIndex.AppIndexApi.start(client, viewAction);
+
     }
 
     private void stop_rtc() {
@@ -295,7 +299,7 @@ public class ActivityWork extends Activity implements NfcAdapter.CreateNdefMessa
 
     void askforupdate() throws JSONException {
         JSONObject info_array = new JSONObject();
-        info_array.accumulate("act_id", act_id);
+            info_array.accumulate("act_id", act_id);
         info_array.accumulate("self_character", character);
         gpsLogger.client.emit("update_request", info_array);
         Log.i(TAG, "ask for update");
@@ -350,8 +354,7 @@ public class ActivityWork extends Activity implements NfcAdapter.CreateNdefMessa
                 // TODO: Make sure this auto-generated app URL is correct.
                 Uri.parse("android-app://r2d2.ntuaf.com.ntuaf_2control/http/host/path")
         );
-        AppIndex.AppIndexApi.end(client, viewAction);
-        client.disconnect();
+
     }
 
     public class MessageHandler {
@@ -379,7 +382,15 @@ public class ActivityWork extends Activity implements NfcAdapter.CreateNdefMessa
                     for (int i = 0; i < grouplist.length(); i++) {
                         if (grouplist.getJSONObject(i).getString(AF_CHARACTER).equals(character)) {
                             Log.i(TAG, "character" + grouplist.getJSONObject(i).getString(AF_CHARACTER));
-                            int class_num = Integer.valueOf(grouplist.getJSONObject(i).getString(AF_CLASS));
+                            int class_num;
+                            Log.i(TAG, "class"+grouplist.getJSONObject(i).getString(AF_CLASS));
+                            if (grouplist.getJSONObject(i).getString(AF_CLASS)=="null"){
+                                class_num = 0;
+                            }else{
+                                class_num = Integer.valueOf(grouplist.getJSONObject(i).getString(AF_CLASS));
+                            }
+
+
                             Log.i(TAG, "classnum:" + class_num + " " + class_name[class_num]);
                             if (class_num <= 4 && class_num >= 0) {
                                 self_class_name = class_name[class_num];
