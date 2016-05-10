@@ -87,17 +87,23 @@ public class GpsLogger extends Service{
         Log.i(TAG, "onstart");
 
         Profile profile = Profile.getCurrentProfile();
-        act_id = intent.getStringExtra("act_id");
+        if(intent.hasExtra("act_id")){
+            act_id = intent.getStringExtra("act_id");
+        }else{
+            act_id = "";
+            Log.i(TAG, "no act id");
+        }
+
         character = intent.getStringExtra("character");
         log_type = intent.getIntExtra("type", 0);
         Log.i(TAG, "type:"+log_type);
 
         artistID = profile.getId();
         if (log_type==1){
-            handler.postDelayed(showTimeA, 5000);
+            handler.postDelayed(showTimeA, 3000);
             Log.i(TAG, "runnableA");
         }else if (log_type ==2){
-            handler.postDelayed(showTimeB, 60000);
+            handler.postDelayed(showTimeB, 10000);
             Log.i(TAG, "runnableB");
         }
         this.registerReceiver(this.batteryInfoReceiver,	new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
@@ -109,7 +115,7 @@ public class GpsLogger extends Service{
             }
             locMgr = (LocationManager) getSystemService(LOCATION_SERVICE);
             locMgrListener = new MyLocationlistener();
-            locMgr.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 0, locMgrListener);
+            locMgr.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1500, 0, locMgrListener);
         }
 
 //        id register
@@ -205,16 +211,28 @@ public class GpsLogger extends Service{
 
                 Log.i(TAG, new Date().toString()+": "+x+"and"+y+" Battery:"+level+" acc:"+acc);
             }
-            handler.postDelayed(this, 5000);
+            handler.postDelayed(this, 3000);
         }
     };
     private Runnable showTimeB = new Runnable() {
         public void run() {
 //log目前時間
-            GPSlogTask task = new GPSlogTask();
-            task.execute(act_id, artistID, tempx, tempy, Integer.toString(level), acc, String.valueOf(log_type));
-            Log.i(TAG, new Date().toString()+": batonly"+" Battery:"+level+" acc:"+acc);
-            handler.postDelayed(this, 60000);
+//            GPSlogTask task = new GPSlogTask();
+//            task.execute(act_id, artistID, tempx, tempy, Integer.toString(level), acc, String.valueOf(log_type));
+//            Log.i(TAG, new Date().toString()+": batonly"+" Battery:"+level+" acc:"+acc);
+//            handler.postDelayed(this, 10000);
+            if (tempx!=x || tempy!=y){
+
+                tempx = x;
+                tempy = y;
+                GPSlogTask task = new GPSlogTask();
+                task.execute(act_id, artistID, tempx, tempy, Integer.toString(level), acc, String.valueOf(log_type));
+
+                Log.i(TAG, new Date().toString()+": "+x+"and"+y+" Battery:"+level+" acc:"+acc);
+            }
+            handler.postDelayed(this, 3000);
+            Log.i(TAG, new Date().toString()+": "+x+"and"+y+" Battery:"+level+" acc:"+acc);
+
         }
     };
 
@@ -254,7 +272,8 @@ public class GpsLogger extends Service{
                 if (params[6]=="1"){
                     result = run(getString(R.string.server_location) + getString(R.string.api_gps_log) + params[0]+"/"+params[1]+"/"+params[2]+"/"+params[3]+"/"+params[4]+"/"+params[5]);
                 }else if(params[6]=="2"){
-                    result = run(getString(R.string.server_location) + getString(R.string.api_gps_log) +"batonly/" + params[0]+"/"+params[1]+"/" + params[4]);
+//                    result = run(getString(R.string.server_location) + getString(R.string.api_gps_log) +"batonly/" + params[0]+"/"+params[1]+"/" + params[4]);
+                    result = run(getString(R.string.server_location) + getString(R.string.api_gps_log) + params[0]+"/"+params[1]+"/"+params[2]+"/"+params[3]+"/"+params[4]+"/"+params[5]);
                 }
 
 //                Log.i(TAG, "result:"+result);

@@ -239,7 +239,7 @@ public class LoginFragment extends Fragment {
             JSONObject userjson = new JSONObject(JsonStr);
             JSONObject user_fb_data = userjson.getJSONObject(AF_FB);
 //            token = user_fb_data.getString(AF_TOKEN);
-            email = user_fb_data.getString(AF_EMAIL);
+//            email = user_fb_data.getString(AF_EMAIL);
             dname = user_fb_data.getString(AF_DISPLAY_NAME);
             id = user_fb_data.getString(AF_ID);
 
